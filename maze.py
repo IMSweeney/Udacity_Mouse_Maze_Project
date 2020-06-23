@@ -23,7 +23,8 @@ class Maze(object):
             walls = []
             for line in f_in.readlines():
                 # walls.append(map(int,line.split(',')))
-                line = [int(x) for x in line[:-1].split(',')]
+                line = [int(x) for x in line.strip().split(',')]
+
                 walls.append(line)
             self.walls = np.array(walls)
 

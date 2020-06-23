@@ -32,7 +32,7 @@ if __name__ == '__main__':
     runtimes = []
     total_time = 0
     for run in range(2):
-        print("Starting run {}.").format(run)
+        print("Starting run {}.".format(run))
 
         # Set the robot in the start position. Note that robot position
         # parameters are independent of the robot itself.
@@ -107,7 +107,7 @@ if __name__ == '__main__':
                 if run != 0:
                     runtimes.append(total_time - sum(runtimes))
                     run_active = False
-                    print("Goal found; run {} completed!").format(run)
+                    print("Goal found; run {} completed!".format(run))
 
     # Report score if robot is successful.
     if len(runtimes) == 2:
