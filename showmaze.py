@@ -9,7 +9,7 @@ if __name__ == '__main__':
     '''
 
     # Create a maze based on input argument on command line.
-    testmaze = Maze( str(sys.argv[1]) )
+    testmaze = Maze(str(sys.argv[1]))
 
     # Intialize the window and drawing turtle.
     window = turtle.Screen()
