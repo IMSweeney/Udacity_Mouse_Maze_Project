@@ -1,6 +1,7 @@
 import numpy as np
 from graphics import *
 
+
 class Node():
     def __init__(self, x, y):
         self.location = (x, y)
@@ -72,7 +73,7 @@ class Robot(object):
     def update_knowledge(self, sensors):
         self.cur_node = self.get_node(self.location)
         sensor_directions = self.heading_to_sensor_direction_map[self.heading]
-        
+
         # First add edges for passageways
         for i in range(len(sensors)):
             dist = min(sensors[i], 3)  # Cap edge creation at 3 distance
@@ -84,7 +85,8 @@ class Robot(object):
                 dist -= 1
         pass
 
-    # Pretty much draws walls everywhere since almost all of the edges are blank
+    # Pretty much draws walls everywhere since almost all of the edges are
+    # blank
     def draw_maze_from_knowledge(self):
         # self.initialize_window()
         for i in range(self.maze_dim):
@@ -120,12 +122,12 @@ class Robot(object):
 
     def score_edge_greedy(self, edge):
         return self.goal_node.distance(edge[0])
-    
+
     def move_along_edge(self, edge):
         dest = edge[0].location
         rotation = 0
         movement = edge[1]
-        
+
         x_dist = dest[0] - self.location[0]
         y_dist = dest[1] - self.location[1]
         if x_dist != 0 and y_dist != 0:
@@ -148,7 +150,7 @@ class Robot(object):
             elif self.heading == 'right':
                 rotation = 0
             elif self.heading == 'down':
-                rotation = -90                
+                rotation = -90
             elif self.heading == 'left':
                 rotation = 0
                 movement *= -1
@@ -171,7 +173,7 @@ class Robot(object):
                 rotation = 0
                 movement *= -1
             elif self.heading == 'down':
-                rotation = 90                
+                rotation = 90
             elif self.heading == 'left':
                 rotation = 0
 
@@ -259,7 +261,7 @@ class Robot(object):
         pass
 
     def draw_robot_view(self, sensors):
-        walls = []    
+        walls = []
 
         x, y = self.location[0], self.location[1]
         if self.heading == 'up':
@@ -363,7 +365,7 @@ class Robot(object):
 
         self.update_knowledge(sensors)
 
-        print({'loc': self.cur_node, 'heading': self.heading, 
+        print({'loc': self.cur_node, 'heading': self.heading,
                'sensors': sensors, 'edges': self.cur_node.edges})
 
         if method == 'tuple':
