@@ -98,48 +98,49 @@ class Robot(object):
 
     def draw_robot_view(self, sensors):
         print(self.heading, sensors)
+        x, y = self.location[0], self.location[1]
         if self.heading == 'up':
-            pt = (self.location[0] - sensors[0], self.location[1])
+            pt = (x - sensors[0], y)
             self.wall_from_point(pt, 'l').draw(self.win)
-            pt = (self.location[0], self.location[1] + sensors[1])
+            pt = (x, y + sensors[1])
             self.wall_from_point(pt, 'u').draw(self.win)
-            pt = (self.location[1] + sensors[2], self.location[1])
+            pt = (x + sensors[2], y)
             self.wall_from_point(pt, 'r').draw(self.win)
 
         elif self.heading == 'right':
-            pt = (self.location[0], self.location[1] + sensors[0])
+            pt = (x, y + sensors[0])
             self.wall_from_point(pt, 'u').draw(self.win)
-            pt = (self.location[0] + sensors[1], self.location[1])
+            pt = (x + sensors[1], y)
             self.wall_from_point(pt, 'r').draw(self.win)
-            pt = (self.location[1], self.location[1] - sensors[2])
+            pt = (x, y - sensors[2])
             self.wall_from_point(pt, 'd').draw(self.win)
 
         elif self.heading == 'down':
-            pt = (self.location[0] + sensors[0], self.location[1])
+            pt = (x + sensors[0], y)
             self.wall_from_point(pt, 'r').draw(self.win)
-            pt = (self.location[0], self.location[1] - sensors[1])
+            pt = (self.location[0], y - sensors[1])
             self.wall_from_point(pt, 'd').draw(self.win)
-            pt = (self.location[1] - sensors[2], self.location[1])
+            pt = (x - sensors[2], y)
             self.wall_from_point(pt, 'l').draw(self.win)
 
         elif self.heading == 'left':
-            pt = (self.location[0], self.location[1] - sensors[0])
+            pt = (x, y - sensors[0])
             self.wall_from_point(pt, 'd').draw(self.win)
-            pt = (self.location[0] - sensors[1], self.location[1])
+            pt = (x - sensors[1], y)
             self.wall_from_point(pt, 'l').draw(self.win)
-            pt = (self.location[1], self.location[1] + sensors[2])
+            pt = (x, y + sensors[2])
             self.wall_from_point(pt, 'u').draw(self.win)
 
         else:
             print('bad heading: {}'.format(self.heading))
         pass
 
-    def update_location_heading(self, rotation, movement):
+    def update_heading_location(self, rotation, movement):
         # Update the heading
         heading_index = self.headings.index(self.heading)
         heading_index = heading_index + int(rotation / 90)
         if heading_index < 0:
-            heading_index = len(self.headings) - 1 + heading_index
+            heading_index = len(self.headings) + heading_index
         elif heading_index > len(self.headings) - 1:
             heading_index = heading_index % len(self.headings)
         self.heading = self.headings[heading_index]
@@ -153,6 +154,11 @@ class Robot(object):
             self.location = [self.location[0], self.location[1] - movement]
         elif self.heading == 'left':
             self.location = [self.location[0] - movement, self.location[1]]
+        pass
+
+    def reset_heading_location(self):
+        self.location = [0, 0]
+        self.heading = 'up'
         pass
 
     def next_move(self, sensors):
@@ -179,18 +185,46 @@ class Robot(object):
         self.draw_robot_view(sensors)
         self.draw_rob()
 
-        rotations = [-90, 0, 90]
-        movements = [-3, -2, -1, 0, 1, 2, 3]
+        rotations = ['Reset', -90, 0, 90]
+        movements = ['Reset', -3, -2, -1, 0, 1, 2, 3]
 
-        rotation, movement = input('enter move (rot, mov): ').split(', ')
-        rotation = int(rotation)
-        movement = int(movement)
+        method = 'arrow'
+
+        if method == 'tuple':
+            rotation, movement = input('enter move (rot, mov): ').split(', ')
+            rotation = int(rotation)
+            movement = int(movement)
+
+        elif method == 'arrow':
+            # print('Use arrow keys to move, q to quit')
+            key = self.win.getKey()
+            if key == 'q':
+                exit('bye')
+            elif key in ['r', 'Space']:
+                rotation, movement = 'Reset', 'Reset'
+            elif key in ['Up', 'w']:
+                rotation, movement = 0, 1
+            elif key in ['Right', 'd']:
+                rotation, movement = 90, 0
+            elif key in ['Down', 's']:
+                rotation, movement = 0, -1
+            elif key in ['Left', 'a']:
+                rotation, movement = -90, 0
+            else:
+                print('invalid key (use arrows or wasd, q to quit)')
+                rotation, movement = 0, 0
+
         if rotation not in rotations:
+            print('invalid rotation')
             rotation = 0
         if movement not in movements:
+            print('invalid movement')
             movement = 0
 
-        self.update_location_heading(rotation, movement)
+        if (rotation, movement) == ('Reset', 'Reset'):
+            self.reset_heading_location()
+        else:
+            self.update_heading_location(rotation, movement)
 
         return rotation, movement
 
