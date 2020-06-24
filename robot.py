@@ -1,6 +1,23 @@
 import numpy as np
 from graphics import *
 
+class Node():
+    def __init__(self, x, y):
+        self.location = (x, y)
+        self.edges = set()  # each edge is a tuple (other node, distance)
+
+    def add_edge(self, other, weight):
+        weight = np.abs(weight)
+        self.edges.add((other, weight))
+        other.edges.add((self, weight))
+
+    def wall_between(self, other):
+        connected_nodes = [tup[0] for tup in self.edges]
+        return other not in connected_nodes
+
+    def __repr__(self):
+        return str(self.location)
+
 
 class Robot(object):
     def __init__(self, maze_dim):
@@ -10,10 +27,19 @@ class Robot(object):
         provided based on common information, including the size of the maze
         the robot is placed in.
         '''
-        self.headings = ['up', 'right', 'down', 'left']
         self.location = [0, 0]
         self.heading = 'up'
         self.maze_dim = maze_dim
+
+        self.headings = ['up', 'right', 'down', 'left']
+        self.heading_to_sensor_direction_map = {
+            'up': [(-1, 0), (0, 1), (1, 0)],
+            'right': [(0, 1), (1, 0), (0, -1)],
+            'down': [(1, 0), (0, -1), (-1, 0)],
+            'left': [(0, -1), (-1, 0), (0, 1)]
+        }
+        self.maze_map = self.initialize_map()
+        self.cur_node = self.get_node(self.location)
 
         self.do_draw = True
         if self.do_draw:
@@ -21,6 +47,98 @@ class Robot(object):
             self.origin = (20, (self.maze_dim - 1 + 2) * self.grid_width)
             self.initialize_window()
 
+    # ------------
+    # Graph functions
+    def initialize_map(self):
+        # Do i want to do this or use a graph or nodes and linkages??
+        maze_map = []
+        for i in range(self.maze_dim):
+            maze_map.append([])
+            for j in range(self.maze_dim):
+                maze_map[i].append(Node(i, j))
+        return maze_map
+
+    def get_node(self, location):
+        return self.maze_map[location[0]][location[1]]
+
+    def update_knowledge(self, sensors):
+        self.cur_node = self.get_node(self.location)
+        sensor_directions = self.heading_to_sensor_direction_map[self.heading]
+        
+        # First add edges for passageways
+        for i in range(len(sensors)):
+            dist = sensors[i]
+            while dist > 0:
+                other_x = self.location[0] + sensor_directions[i][0] * dist
+                other_y = self.location[1] + sensor_directions[i][1] * dist
+                other = self.get_node((other_x, other_y))
+                self.cur_node.add_edge(other, dist)
+                dist -= 1
+        pass
+
+    # Pretty much draws walls everywhere since almost all of the edges are blank
+    def draw_maze_from_knowledge(self):
+        # self.initialize_window()
+        for i in range(self.maze_dim):
+            for j in range(self.maze_dim):
+                for k, offset in {'u': (0, 1), 'r': (1, 0),
+                                  'd': (0, -1), 'l': (-1, 0)}.items():
+                    node = self.get_node((i, j))
+                    try:
+                        other = self.get_node((i + offset[0], j + offset[1]))
+                        if node.wall_between(other):
+                            wall = self.wall_from_point(node.location, k)
+                            wall.draw(self.win)
+                    except IndexError:
+                        pass
+        return
+
+    # ------------
+    # A* path planning (simple)
+    def a_star_step(self):
+        rotation, movement = 0, 0
+        edges = self.cur_node.edges
+        best_score = 0
+        best_edge = list(edges)[0]
+        for edge in edges:
+            score = score_edge_greedy(edge)
+            if score > best_score:
+                best_score = score
+                best_edge = edge
+
+        rotation, movement = self.move_along_edge(edge)
+
+        return rotation, movement
+
+    def score_edge_greedy(self, edge):
+        dest = edge[0].location
+        center = (self.maze_dim / 2, self.maze_dim / 2)
+        return np.sqrt((dest[0] - center[0]) ** 2 + (dest[1] - center[1]) ** 2)
+    
+    def move_along_edge(self, edge):
+        dest = edge[0].location
+        movement = edge[1]
+        
+        x_dist = dest[0] - self.location[0]
+        y_dist = dest[1] - self.location[1]
+        if x_dist != 0 and y_dist != 0:
+            print('invalid edge: {} to {}'.format(self.cur_node, dest))
+        elif y_dist > 0:
+            if self.heading == 'up':
+                rotation = 0
+            elif self.heading == 'right':
+                rotation = -90
+            elif self.heading == 'down':
+                rotation = 0
+                movement *= -1
+            elif self.heading == 'left':
+                rotation = 90
+
+        return rotation, movement
+    # ------------
+
+    # ------------
+    # Drawing functions
     def wall_from_point(self, p, direction):
         # get x,y of the lower left corner of the cell
         x = self.origin[0] + (p[0] * self.grid_width)
@@ -98,43 +216,51 @@ class Robot(object):
 
     def draw_robot_view(self, sensors):
         print(self.heading, sensors)
+        walls = []    
+
         x, y = self.location[0], self.location[1]
         if self.heading == 'up':
             pt = (x - sensors[0], y)
-            self.wall_from_point(pt, 'l').draw(self.win)
+            walls.append(self.wall_from_point(pt, 'l'))
             pt = (x, y + sensors[1])
-            self.wall_from_point(pt, 'u').draw(self.win)
+            walls.append(self.wall_from_point(pt, 'u'))
             pt = (x + sensors[2], y)
-            self.wall_from_point(pt, 'r').draw(self.win)
+            walls.append(self.wall_from_point(pt, 'r'))
 
         elif self.heading == 'right':
             pt = (x, y + sensors[0])
-            self.wall_from_point(pt, 'u').draw(self.win)
+            walls.append(self.wall_from_point(pt, 'u'))
             pt = (x + sensors[1], y)
-            self.wall_from_point(pt, 'r').draw(self.win)
+            walls.append(self.wall_from_point(pt, 'r'))
             pt = (x, y - sensors[2])
-            self.wall_from_point(pt, 'd').draw(self.win)
+            walls.append(self.wall_from_point(pt, 'd'))
 
         elif self.heading == 'down':
             pt = (x + sensors[0], y)
-            self.wall_from_point(pt, 'r').draw(self.win)
+            walls.append(self.wall_from_point(pt, 'r'))
             pt = (self.location[0], y - sensors[1])
-            self.wall_from_point(pt, 'd').draw(self.win)
+            walls.append(self.wall_from_point(pt, 'd'))
             pt = (x - sensors[2], y)
-            self.wall_from_point(pt, 'l').draw(self.win)
+            walls.append(self.wall_from_point(pt, 'l'))
 
         elif self.heading == 'left':
             pt = (x, y - sensors[0])
-            self.wall_from_point(pt, 'd').draw(self.win)
+            walls.append(self.wall_from_point(pt, 'd'))
             pt = (x - sensors[1], y)
-            self.wall_from_point(pt, 'l').draw(self.win)
+            walls.append(self.wall_from_point(pt, 'l'))
             pt = (x, y + sensors[2])
-            self.wall_from_point(pt, 'u').draw(self.win)
+            walls.append(self.wall_from_point(pt, 'u'))
 
         else:
             print('bad heading: {}'.format(self.heading))
-        pass
 
+        for wall in walls:
+            wall.draw(self.win)
+        pass
+    # ------------
+
+    # ------------
+    # Update knowledge
     def update_heading_location(self, rotation, movement):
         # Update the heading
         heading_index = self.headings.index(self.heading)
@@ -160,7 +286,9 @@ class Robot(object):
         self.location = [0, 0]
         self.heading = 'up'
         pass
+    # ------------
 
+    # ------------
     def next_move(self, sensors):
         '''
         Use this function to determine the next move the robot should make,
@@ -182,8 +310,12 @@ class Robot(object):
         the maze) then returing the tuple ('Reset', 'Reset') will indicate to
         the tester to end the run and return the robot to the start.
         '''
-        self.draw_robot_view(sensors)
+
         self.draw_rob()
+        self.draw_robot_view(sensors)
+        # self.draw_maze_from_knowledge()
+
+        self.update_knowledge(sensors)
 
         rotations = ['Reset', -90, 0, 90]
         movements = ['Reset', -3, -2, -1, 0, 1, 2, 3]
@@ -214,6 +346,9 @@ class Robot(object):
                 print('invalid key (use arrows or wasd, q to quit)')
                 rotation, movement = 0, 0
 
+        elif method == 'a_star':
+            rotation, movement = self.a_star_step()
+
         if rotation not in rotations:
             print('invalid rotation')
             rotation = 0
@@ -231,5 +366,4 @@ class Robot(object):
 
 if __name__ == '__main__':
     rob = Robot(12)
-    input('p')
     rob.win.close()
