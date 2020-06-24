@@ -15,6 +15,11 @@ class Node():
         connected_nodes = [tup[0] for tup in self.edges]
         return other not in connected_nodes
 
+    def distance(self, other):
+        ''' Manhattan distance between this node and another. '''
+        return (np.abs(self.location[0] - other.location[0]) +
+                np.abs(self.location[1] - other.location[1]))
+
     def __repr__(self):
         return str(self.location)
 
@@ -40,6 +45,9 @@ class Robot(object):
         }
         self.maze_map = self.initialize_map()
         self.cur_node = self.get_node(self.location)
+        # just one of the goal nodes but it's fine...
+        self.goal_node = self.get_node((int(self.maze_dim / 2),
+                                        int(self.maze_dim / 2)))
 
         self.do_draw = True
         if self.do_draw:
@@ -67,7 +75,7 @@ class Robot(object):
         
         # First add edges for passageways
         for i in range(len(sensors)):
-            dist = sensors[i]
+            dist = min(sensors[i], 3)  # Cap edge creation at 3 distance
             while dist > 0:
                 other_x = self.location[0] + sensor_directions[i][0] * dist
                 other_y = self.location[1] + sensor_directions[i][1] * dist
@@ -98,31 +106,31 @@ class Robot(object):
     def a_star_step(self):
         rotation, movement = 0, 0
         edges = self.cur_node.edges
-        best_score = 0
+        best_score = self.maze_dim
         best_edge = list(edges)[0]
         for edge in edges:
-            score = score_edge_greedy(edge)
-            if score > best_score:
+            score = self.score_edge_greedy(edge)
+            if score < best_score:
                 best_score = score
                 best_edge = edge
 
-        rotation, movement = self.move_along_edge(edge)
+        rotation, movement = self.move_along_edge(best_edge)
 
         return rotation, movement
 
     def score_edge_greedy(self, edge):
-        dest = edge[0].location
-        center = (self.maze_dim / 2, self.maze_dim / 2)
-        return np.sqrt((dest[0] - center[0]) ** 2 + (dest[1] - center[1]) ** 2)
+        return self.goal_node.distance(edge[0])
     
     def move_along_edge(self, edge):
         dest = edge[0].location
+        rotation = 0
         movement = edge[1]
         
         x_dist = dest[0] - self.location[0]
         y_dist = dest[1] - self.location[1]
         if x_dist != 0 and y_dist != 0:
             print('invalid edge: {} to {}'.format(self.cur_node, dest))
+
         elif y_dist > 0:
             if self.heading == 'up':
                 rotation = 0
@@ -133,6 +141,42 @@ class Robot(object):
                 movement *= -1
             elif self.heading == 'left':
                 rotation = 90
+
+        elif x_dist > 0:
+            if self.heading == 'up':
+                rotation = 90
+            elif self.heading == 'right':
+                rotation = 0
+            elif self.heading == 'down':
+                rotation = -90                
+            elif self.heading == 'left':
+                rotation = 0
+                movement *= -1
+
+        elif y_dist < 0:
+            if self.heading == 'up':
+                rotation = 0
+                movement *= -1
+            elif self.heading == 'right':
+                rotation = 90
+            elif self.heading == 'down':
+                rotation = 0
+            elif self.heading == 'left':
+                rotation = -90
+
+        elif x_dist < 0:
+            if self.heading == 'up':
+                rotation = -90
+            elif self.heading == 'right':
+                rotation = 0
+                movement *= -1
+            elif self.heading == 'down':
+                rotation = 90                
+            elif self.heading == 'left':
+                rotation = 0
+
+        else:
+            print('where am I going? '.format(edge))
 
         return rotation, movement
     # ------------
@@ -215,7 +259,6 @@ class Robot(object):
         pass
 
     def draw_robot_view(self, sensors):
-        print(self.heading, sensors)
         walls = []    
 
         x, y = self.location[0], self.location[1]
@@ -310,6 +353,9 @@ class Robot(object):
         the maze) then returing the tuple ('Reset', 'Reset') will indicate to
         the tester to end the run and return the robot to the start.
         '''
+        rotations = ['Reset', -90, 0, 90]
+        movements = ['Reset', -3, -2, -1, 0, 1, 2, 3]
+        method = 'a_star'
 
         self.draw_rob()
         self.draw_robot_view(sensors)
@@ -317,10 +363,8 @@ class Robot(object):
 
         self.update_knowledge(sensors)
 
-        rotations = ['Reset', -90, 0, 90]
-        movements = ['Reset', -3, -2, -1, 0, 1, 2, 3]
-
-        method = 'arrow'
+        print({'loc': self.cur_node, 'heading': self.heading, 
+               'sensors': sensors, 'edges': self.cur_node.edges})
 
         if method == 'tuple':
             rotation, movement = input('enter move (rot, mov): ').split(', ')
@@ -348,6 +392,9 @@ class Robot(object):
 
         elif method == 'a_star':
             rotation, movement = self.a_star_step()
+            key = self.win.getKey()
+            if key == 'q':
+                exit('bye')
 
         if rotation not in rotations:
             print('invalid rotation')
@@ -361,6 +408,7 @@ class Robot(object):
         else:
             self.update_heading_location(rotation, movement)
 
+        print(rotation, movement)
         return rotation, movement
 
 
