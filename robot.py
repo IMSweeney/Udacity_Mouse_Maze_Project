@@ -1,4 +1,5 @@
 import numpy as np
+from queue import Queue, PriorityQueue
 from graphics import *
 
 
@@ -19,6 +20,32 @@ class Node():
         return (np.abs(self.location[0] - other.location[0]) +
                 np.abs(self.location[1] - other.location[1]))
 
+    # From: https://www.redblobgames.com/pathfinding/a-star/introduction.html
+    def get_path_to(self, other):
+        if self == other:
+            print('This is an empty path')
+            return []
+
+        frontier = Queue()
+        frontier.put(self)
+        came_from = {}
+        came_from[self] = None
+
+        while not frontier.empty():
+            current = frontier.get()
+            for node in current.edges:
+                if node not in came_from:
+                    frontier.put(node)
+                    came_from[node] = current
+
+        current = other
+        path = []
+        while current != self:
+            path.append(current)
+            current = came_from[current]
+        path.reverse()
+        return path
+
     def __repr__(self):
         return str(self.location)
 
@@ -27,6 +54,9 @@ class Node():
 
     def __hash__(self):
         return hash(self.location)
+
+    def __lt__(self, other):
+        return np.random.choice([self, other])
 
 
 class Node_LPA(Node):
@@ -116,22 +146,45 @@ class Robot(object):
     #       https://www.redblobgames.com/pathfinding/a-star/introduction.html
     #
     def init_search_simple(self):
-        self.frontier = PriorityQueue()
-        self.frontier.put(self.cur_node, score_search_simple(self.cur_node))
-        self.visited = {self.cur_node: True}
+        self.frontier = set()
+        self.visited = set()
+        self.visited.add(self.cur_node)
 
     def search_simple(self):
-        node = self.frontier.get()
-        for edge in node.edges:
-            if edge not in visited:
-                self.frontier.put(edge, score_search_simple(edge))
-                self.visited[edge] = True
-        return self.move_along_edge(best_edge)
+        # If the frontier does not yet exist, initialize it
+        try:
+            if self.frontier:
+                pass
+        except AttributeError:
+            self.init_search_simple()
+        # self.recalculate_frontier()
+
+        # Check for goal reached
+        if self.cur_node == self.goal_node:
+            return 'Reset', 'Reset'
+
+        # All this does is remove the current node from the frontier
+        self.visited.add(self.cur_node)
+        self.frontier -= self.visited
+
+        # Now add new nodes to the frontier
+        for edge in self.cur_node.edges:
+            if edge not in self.visited:
+                self.frontier.add(edge)
+
+        # Choose a new node to explore and move towards it
+        frontier = [(n, self.score_search_simple(n)) for n in self.frontier]
+        frontier.sort(key=lambda n: n[1])
+        current_goal = frontier[0][0]
+        print('Current Goal: {}'.format(current_goal))
+        path = self.cur_node.get_path_to(current_goal)
+
+        return self.move_along_edge(path[0])
 
     def score_search_simple(self, node):
         score = 0
         score += node.distance(self.goal_node)
-        score += node.distance(self.cur_node)
+        # score += node.distance(self.cur_node)
         return score
 
     def search_best_neighbor(self):
@@ -390,7 +443,7 @@ class Robot(object):
         '''
         rotations = ['Reset', -90, 0, 90]
         movements = ['Reset', -3, -2, -1, 0, 1, 2, 3]
-        method = 'a_star'
+        method = 'search_simple'
 
         self.draw_rob()
         self.draw_robot_view(sensors)
@@ -425,11 +478,17 @@ class Robot(object):
                 print('invalid key (use arrows or wasd, q to quit)')
                 rotation, movement = 0, 0
 
-        elif method == 'a_star':
+        elif method == 'search_best_neighbor':
             rotation, movement = self.search_best_neighbor()
             key = self.win.getKey()
             if key == 'q':
                 exit('bye')
+
+        elif method == 'search_simple':
+            rotation, movement = self.search_simple()
+            # key = self.win.getKey()
+            # if key == 'q':
+            #     exit('bye')
 
         if rotation not in rotations:
             print('invalid rotation')
@@ -443,7 +502,7 @@ class Robot(object):
         else:
             self.update_heading_location(rotation, movement)
 
-        print(rotation, movement)
+        print('Attempting Move: {}, {}'.format(rotation, movement))
         return rotation, movement
 
 
