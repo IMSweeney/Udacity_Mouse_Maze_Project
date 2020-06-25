@@ -14,7 +14,7 @@ dir_reverse = {'u': 'd', 'r': 'l', 'd': 'u', 'l': 'r',
 
 # test and score parameters
 max_time = 1000
-train_score_mult = 1/30.
+train_score_mult = 1 / 30.
 
 if __name__ == '__main__':
     '''
@@ -23,7 +23,7 @@ if __name__ == '__main__':
     '''
 
     # Create a maze based on input argument on command line.
-    testmaze = Maze( str(sys.argv[1]) )
+    testmaze = Maze(str(sys.argv[1]))
 
     # Intitialize a robot; robot receives info about maze dimensions.
     testrobot = Robot(testmaze.dim)
@@ -80,7 +80,7 @@ if __name__ == '__main__':
             # perform movement
             if abs(movement) > 3:
                 print("Movement limited to three squares in a turn.")
-            movement = max(min(int(movement), 3), -3) # fix to range [-3, 3]
+            movement = max(min(int(movement), 3), -3)  # fix to range [-3, 3]
             while movement:
                 if movement > 0:
                     if testmaze.is_permissible(robot_pos['location'], robot_pos['heading']):
@@ -111,4 +111,7 @@ if __name__ == '__main__':
 
     # Report score if robot is successful.
     if len(runtimes) == 2:
-        print("Task complete! Score: {:4.3f}").format(runtimes[1] + train_score_mult*runtimes[0])
+        print(
+            "Task complete! Score: {:4.3f}"
+            .format(runtimes[1] + train_score_mult * runtimes[0])
+        )

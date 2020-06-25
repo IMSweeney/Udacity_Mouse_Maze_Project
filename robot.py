@@ -1,5 +1,6 @@
 import numpy as np
-from queue import Queue, PriorityQueue
+from queue import Queue
+import time
 from graphics import *
 
 
@@ -486,6 +487,7 @@ class Robot(object):
 
         elif method == 'search_simple':
             rotation, movement = self.search_simple()
+            time.sleep(0.1)
             # key = self.win.getKey()
             # if key == 'q':
             #     exit('bye')
