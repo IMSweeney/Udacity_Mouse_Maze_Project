@@ -25,6 +25,9 @@ class Node():
     def __eq__(self, other):
         return self.location == other.location
 
+    def __hash__(self):
+        return hash(self.location)
+
 
 class Node_LPA(Node):
     pass
