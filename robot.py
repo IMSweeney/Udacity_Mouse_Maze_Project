@@ -7,14 +7,12 @@ class Node():
         self.location = (x, y)
         self.edges = set()  # each edge is a tuple (other node, distance)
 
-    def add_edge(self, other, weight):
-        weight = np.abs(weight)
-        self.edges.add((other, weight))
-        other.edges.add((self, weight))
+    def add_edge(self, other):
+        self.edges.add(other)
+        other.edges.add(self)
 
     def wall_between(self, other):
-        connected_nodes = [tup[0] for tup in self.edges]
-        return other not in connected_nodes
+        return other not in self.edges
 
     def distance(self, other):
         ''' Manhattan distance between this node and another. '''
@@ -23,6 +21,13 @@ class Node():
 
     def __repr__(self):
         return str(self.location)
+
+    def __eq__(self, other):
+        return self.location == other.location
+
+
+class Node_LPA(Node):
+    pass
 
 
 class Robot(object):
@@ -59,16 +64,15 @@ class Robot(object):
     # ------------
     # Graph functions
     def initialize_map(self):
-        # Do i want to do this or use a graph or nodes and linkages??
+        ''' returns a list of lists of nodes in the maze. '''
         maze_map = []
         for i in range(self.maze_dim):
-            maze_map.append([])
             for j in range(self.maze_dim):
-                maze_map[i].append(Node(i, j))
+                maze_map.append(Node(i, j))
         return maze_map
 
     def get_node(self, location):
-        return self.maze_map[location[0]][location[1]]
+        return self.maze_map[location[0] * self.maze_dim + location[1]]
 
     def update_knowledge(self, sensors):
         self.cur_node = self.get_node(self.location)
@@ -81,7 +85,7 @@ class Robot(object):
                 other_x = self.location[0] + sensor_directions[i][0] * dist
                 other_y = self.location[1] + sensor_directions[i][1] * dist
                 other = self.get_node((other_x, other_y))
-                self.cur_node.add_edge(other, dist)
+                self.cur_node.add_edge(other)
                 dist -= 1
         pass
 
@@ -104,8 +108,30 @@ class Robot(object):
         return
 
     # ------------
-    # A* path planning (simple)
-    def a_star_step(self):
+    # Planning algorithms
+    #   Resources:
+    #       https://www.redblobgames.com/pathfinding/a-star/introduction.html
+    #
+    def init_search_simple(self):
+        self.frontier = PriorityQueue()
+        self.frontier.put(self.cur_node, score_search_simple(self.cur_node))
+        self.visited = {self.cur_node: True}
+
+    def search_simple(self):
+        node = self.frontier.get()
+        for edge in node.edges:
+            if edge not in visited:
+                self.frontier.put(edge, score_search_simple(edge))
+                self.visited[edge] = True
+        return self.move_along_edge(best_edge)
+
+    def score_search_simple(self, node):
+        score = 0
+        score += node.distance(self.goal_node)
+        score += node.distance(self.cur_node)
+        return score
+
+    def search_best_neighbor(self):
         rotation, movement = 0, 0
         edges = self.cur_node.edges
         best_score = self.maze_dim
@@ -121,12 +147,12 @@ class Robot(object):
         return rotation, movement
 
     def score_edge_greedy(self, edge):
-        return self.goal_node.distance(edge[0])
+        return self.goal_node.distance(edge)
 
     def move_along_edge(self, edge):
-        dest = edge[0].location
+        dest = edge.location
         rotation = 0
-        movement = edge[1]
+        movement = 0
 
         x_dist = dest[0] - self.location[0]
         y_dist = dest[1] - self.location[1]
@@ -134,6 +160,7 @@ class Robot(object):
             print('invalid edge: {} to {}'.format(self.cur_node, dest))
 
         elif y_dist > 0:
+            movement = np.abs(y_dist)
             if self.heading == 'up':
                 rotation = 0
             elif self.heading == 'right':
@@ -145,6 +172,7 @@ class Robot(object):
                 rotation = 90
 
         elif x_dist > 0:
+            movement = np.abs(x_dist)
             if self.heading == 'up':
                 rotation = 90
             elif self.heading == 'right':
@@ -156,6 +184,7 @@ class Robot(object):
                 movement *= -1
 
         elif y_dist < 0:
+            movement = np.abs(y_dist)
             if self.heading == 'up':
                 rotation = 0
                 movement *= -1
@@ -167,6 +196,7 @@ class Robot(object):
                 rotation = -90
 
         elif x_dist < 0:
+            movement = np.abs(x_dist)
             if self.heading == 'up':
                 rotation = -90
             elif self.heading == 'right':
@@ -393,7 +423,7 @@ class Robot(object):
                 rotation, movement = 0, 0
 
         elif method == 'a_star':
-            rotation, movement = self.a_star_step()
+            rotation, movement = self.search_best_neighbor()
             key = self.win.getKey()
             if key == 'q':
                 exit('bye')
