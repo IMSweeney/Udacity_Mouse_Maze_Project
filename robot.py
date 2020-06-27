@@ -188,7 +188,6 @@ class Robot(object):
         if len(self.path) == 0:
             if self.search_type == 'finish':
                 current_goal = self.goal_node
-                current_score = self.score_search_simple(current_goal)
 
             else:
                 if len(self.frontier) == 0:
@@ -199,10 +198,7 @@ class Robot(object):
                             for n in self.frontier]
                 frontier.sort(key=lambda n: n[1])
                 current_goal = frontier[0][0]
-                current_score = frontier[0][1]
 
-            # print('New Target: {}, score: {}'
-            #       .format(current_goal, current_score))
             self.path = self.cur_node.get_path_to(current_goal)
 
         # Now move along that path
