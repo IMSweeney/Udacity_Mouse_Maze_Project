@@ -60,10 +60,6 @@ class Node():
         return np.random.choice([self, other])
 
 
-class Node_LPA(Node):
-    pass
-
-
 class Robot(object):
     def __init__(self, maze_dim):
         '''
@@ -83,16 +79,19 @@ class Robot(object):
             'down': [(1, 0), (0, -1), (-1, 0)],
             'left': [(0, -1), (-1, 0), (0, 1)]
         }
+        self.max_move = 3
         self.maze_map = self.initialize_map()
         self.cur_node = self.get_node(self.location)
         # just one of the goal nodes but it's fine...
         self.goal_node = self.get_node((int(self.maze_dim / 2),
                                         int(self.maze_dim / 2)))
+        self.init_search_simple()
 
         self.do_draw = True
         if self.do_draw:
-            self.grid_width = 20
-            self.origin = (20, (self.maze_dim - 1 + 2) * self.grid_width)
+            self.grid_width = 40
+            self.origin = (self.grid_width,
+                           (self.maze_dim - 1 + 2) * self.grid_width)
             self.initialize_window()
 
     # ------------
@@ -114,13 +113,23 @@ class Robot(object):
 
         # First add edges for passageways
         for i in range(len(sensors)):
-            dist = min(sensors[i], 3)  # Cap edge creation at 3 distance
-            while dist > 0:
-                other_x = self.location[0] + sensor_directions[i][0] * dist
-                other_y = self.location[1] + sensor_directions[i][1] * dist
-                other = self.get_node((other_x, other_y))
-                self.cur_node.add_edge(other)
-                dist -= 1
+
+            dist_to_wall = sensors[i]
+            # d1 is the distance from the current node to this node
+            for d1 in range(dist_to_wall + 1):
+                n1_x = self.location[0] + sensor_directions[i][0] * d1
+                n1_y = self.location[1] + sensor_directions[i][1] * d1
+                n1 = self.get_node((n1_x, n1_y))
+
+                # Cap edge creation at the max move distance or wall
+                furthest_move = min(d1 + 1 + self.max_move, dist_to_wall + 1)
+                # d2 is the distance from the current node to the next node
+                # for an edge
+                for d2 in range(d1 + 1, furthest_move):
+                    n2_x = self.location[0] + sensor_directions[i][0] * d2
+                    n2_y = self.location[1] + sensor_directions[i][1] * d2
+                    n2 = self.get_node((n2_x, n2_y))
+                    n1.add_edge(n2)
         pass
 
     # Pretty much draws walls everywhere since almost all of the edges are
@@ -150,19 +159,21 @@ class Robot(object):
         self.frontier = set()
         self.visited = set()
         self.visited.add(self.cur_node)
+        self.search_type = 'find_goal'
+        self.explore_percent = 0.8
+        self.path = []
 
     def search_simple(self):
-        # If the frontier does not yet exist, initialize it
-        try:
-            if self.frontier:
-                pass
-        except AttributeError:
-            self.init_search_simple()
-        # self.recalculate_frontier()
+        # Figure out what mode we are in
+        if self.search_type == 'find_goal':
+            if self.cur_node == self.goal_node:
+                self.search_type = 'explore'
 
-        # Check for goal reached
-        if self.cur_node == self.goal_node:
-            return 'Reset', 'Reset'
+        elif self.search_type == 'explore':
+            if len(self.visited) >= self.explore_percent * len(self.maze_map):
+                self.search_type = 'finish'
+                self.path = []
+                return 'Reset', 'Reset'
 
         # All this does is remove the current node from the frontier
         self.visited.add(self.cur_node)
@@ -173,38 +184,55 @@ class Robot(object):
             if edge not in self.visited:
                 self.frontier.add(edge)
 
-        # Choose a new node to explore and move towards it
-        frontier = [(n, self.score_search_simple(n)) for n in self.frontier]
-        frontier.sort(key=lambda n: n[1])
-        current_goal = frontier[0][0]
-        print('Current Goal: {}'.format(current_goal))
-        path = self.cur_node.get_path_to(current_goal)
+        # If we don't have a path, choose one
+        if len(self.path) == 0:
+            if self.search_type == 'finish':
+                current_goal = self.goal_node
+                current_score = self.score_search_simple(current_goal)
 
-        return self.move_along_edge(path[0])
+            else:
+                if len(self.frontier) == 0:
+                    print('All paths explored')
+                    return 0, 0
+                # Choose a new node to explore and move towards it
+                frontier = [(n, self.score_search_simple(n))
+                            for n in self.frontier]
+                frontier.sort(key=lambda n: n[1])
+                current_goal = frontier[0][0]
+                current_score = frontier[0][1]
+
+            # print('New Target: {}, score: {}'
+            #       .format(current_goal, current_score))
+            self.path = self.cur_node.get_path_to(current_goal)
+
+        # Now move along that path
+        move = self.path[0]
+        self.path = self.path[1:]
+        return self.move_along_edge(move)
 
     def score_search_simple(self, node):
         score = 0
-        score += node.distance(self.goal_node)
-        # score += node.distance(self.cur_node)
+        if self.search_type == 'find_goal':
+            score += node.distance(self.goal_node)
+            score += 2.0 * node.distance(self.cur_node)
+        elif self.search_type == 'explore':
+            # score += node.distance(self.goal_node)
+            score += node.distance(self.cur_node)
+            # score += 0.5 * self.area_explored(node)
+
         return score
 
-    def search_best_neighbor(self):
-        rotation, movement = 0, 0
-        edges = self.cur_node.edges
-        best_score = self.maze_dim
-        best_edge = list(edges)[0]
-        for edge in edges:
-            score = self.score_edge_greedy(edge)
-            if score < best_score:
-                best_score = score
-                best_edge = edge
+    def area_explored(self, node):
+        # Max score ~maze_dim for corner node with nothing visited
+        score = 0
+        for n in self.maze_map:
+            if n == node:
+                continue
+            if n not in self.visited:
+                dist = node.distance(n)
+                score += 1 / dist
 
-        rotation, movement = self.move_along_edge(best_edge)
-
-        return rotation, movement
-
-    def score_edge_greedy(self, edge):
-        return self.goal_node.distance(edge)
+        return score
 
     def move_along_edge(self, edge):
         dest = edge.location
@@ -273,6 +301,19 @@ class Robot(object):
     # ------------
     # Drawing functions
     def wall_from_point(self, p, direction):
+        '''
+        Returns a line object representing a wall
+
+            Parameters:
+                p (tuple): a point on the grid at which to create a wall
+                    indexed 0,0 as lower left corner
+                direction (str): a single character representing the side of
+                    the cell on which to create a wall
+
+            Returns:
+                wall (Line): a graphics module Line object
+        '''
+
         # get x,y of the lower left corner of the cell
         x = self.origin[0] + (p[0] * self.grid_width)
         y = self.origin[1] - (p[1] * self.grid_width)
@@ -452,9 +493,6 @@ class Robot(object):
 
         self.update_knowledge(sensors)
 
-        print({'loc': self.cur_node, 'heading': self.heading,
-               'sensors': sensors, 'edges': self.cur_node.edges})
-
         if method == 'tuple':
             rotation, movement = input('enter move (rot, mov): ').split(', ')
             rotation = int(rotation)
@@ -479,15 +517,9 @@ class Robot(object):
                 print('invalid key (use arrows or wasd, q to quit)')
                 rotation, movement = 0, 0
 
-        elif method == 'search_best_neighbor':
-            rotation, movement = self.search_best_neighbor()
-            key = self.win.getKey()
-            if key == 'q':
-                exit('bye')
-
         elif method == 'search_simple':
             rotation, movement = self.search_simple()
-            time.sleep(0.1)
+            time.sleep(0.05)
             # key = self.win.getKey()
             # if key == 'q':
             #     exit('bye')
@@ -499,12 +531,14 @@ class Robot(object):
             print('invalid movement')
             movement = 0
 
+        # print({'move_type': self.search_type, 'sensors': sensors})
+
         if (rotation, movement) == ('Reset', 'Reset'):
             self.reset_heading_location()
         else:
             self.update_heading_location(rotation, movement)
 
-        print('Attempting Move: {}, {}'.format(rotation, movement))
+        # print('Attempting Move: {}, {}'.format(rotation, movement))
         return rotation, movement
 
 
