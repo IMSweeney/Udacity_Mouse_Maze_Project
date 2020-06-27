@@ -93,6 +93,7 @@ class Robot(object):
             self.origin = (self.grid_width,
                            (self.maze_dim - 1 + 2) * self.grid_width)
             self.initialize_window()
+            self.init_draw_frontier()
 
     # ------------
     # Graph functions
@@ -132,24 +133,6 @@ class Robot(object):
                     n1.add_edge(n2)
         pass
 
-    # Pretty much draws walls everywhere since almost all of the edges are
-    # blank
-    def draw_maze_from_knowledge(self):
-        # self.initialize_window()
-        for i in range(self.maze_dim):
-            for j in range(self.maze_dim):
-                for k, offset in {'u': (0, 1), 'r': (1, 0),
-                                  'd': (0, -1), 'l': (-1, 0)}.items():
-                    node = self.get_node((i, j))
-                    try:
-                        other = self.get_node((i + offset[0], j + offset[1]))
-                        if node.wall_between(other):
-                            wall = self.wall_from_point(node.location, k)
-                            wall.draw(self.win)
-                    except IndexError:
-                        pass
-        return
-
     # ------------
     # Planning algorithms
     #   Resources:
@@ -177,12 +160,14 @@ class Robot(object):
 
         # All this does is remove the current node from the frontier
         self.visited.add(self.cur_node)
+        self.color_node(self.cur_node, 'visited')
         self.frontier -= self.visited
 
         # Now add new nodes to the frontier
         for edge in self.cur_node.edges:
             if edge not in self.visited:
                 self.frontier.add(edge)
+                self.color_node(edge, 'frontier')
 
         # If we don't have a path, choose one
         if len(self.path) == 0:
@@ -296,6 +281,38 @@ class Robot(object):
 
     # ------------
     # Drawing functions
+    def color_node(self, node, type):
+        cell = self.drawn_cells[node]
+        if type == 'frontier':
+            cell.setFill('yellow')
+        if type == 'visited':
+            cell.setFill('white')
+
+    def init_draw_frontier(self):
+        if not hasattr(self, 'drawn_cells'):
+            border = 2
+            self.drawn_cells = {}
+            for node in self.maze_map:
+                x = (self.origin[0] + (node.location[0] * self.grid_width) +
+                     border)
+                y = (self.origin[1] - (node.location[1] * self.grid_width) -
+                     border)
+                x2 = x + self.grid_width - border
+                y2 = y - self.grid_width + border
+                rect = Rectangle(Point(x, y), Point(x2, y2))
+                rect.draw(self.win)
+                rect.setOutline('white')
+                rect.setFill(color_rgb(230, 230, 230))
+                self.drawn_cells[node] = rect
+
+        # for cell in self.drawn_cells:
+        #     node = cell[0]
+        #     rect = cell[1]
+        #     if node in self.visited:
+        #         rect.setFill(color_rgb(230, 230, 230))
+        #     elif node in self.frontier:
+        #         rect.setFill('yellow')
+
     def wall_from_point(self, p, direction):
         '''
         Returns a line object representing a wall
@@ -331,6 +348,7 @@ class Robot(object):
             print('bad direction: {}'.format(direction))
 
     def draw_rob(self):
+        ''' Draws the robot in the maze. '''
         x = (self.origin[0] + (self.location[0] * self.grid_width) +
              self.grid_width / 2)
         y = (self.origin[1] - (self.location[1] * self.grid_width) -
@@ -360,6 +378,7 @@ class Robot(object):
         pass
 
     def initialize_window(self):
+        ''' Initializes the draw window. '''
         s = self.grid_width
         self.win = GraphWin('Maze', (self.maze_dim + 2) * s,
                             (self.maze_dim + 2) * s)
@@ -385,6 +404,7 @@ class Robot(object):
         pass
 
     def draw_robot_view(self, sensors):
+        ''' Uses the sensor data to draw what the robot can see. '''
         walls = []
 
         x, y = self.location[0], self.location[1]
@@ -431,6 +451,7 @@ class Robot(object):
     # ------------
     # Update knowledge
     def update_heading_location(self, rotation, movement):
+        ''' Updates the robot's heading and location based on the move. '''
         # Update the heading
         heading_index = self.headings.index(self.heading)
         heading_index = heading_index + int(rotation / 90)
@@ -452,6 +473,7 @@ class Robot(object):
         pass
 
     def reset_heading_location(self):
+        ''' Resets the heading and location to the start. '''
         self.location = [0, 0]
         self.heading = 'up'
         pass
