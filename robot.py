@@ -143,7 +143,7 @@ class Robot(object):
         self.visited = set()
         self.visited.add(self.cur_node)
         self.search_type = 'find_goal'
-        self.explore_percent = 0.8
+        self.explore_percent = .7
         self.path = []
 
     def search_simple(self):
@@ -185,6 +185,10 @@ class Robot(object):
                 current_goal = frontier[0][0]
 
             self.path = self.cur_node.get_path_to(current_goal)
+
+            if self.search_type == 'finish':
+                print('Shortest path found to the goal is: {}'
+                      .format(len(self.path)))
 
         # Now move along that path
         move = self.path[0]
