@@ -193,6 +193,7 @@ class Robot(object):
             if self.search_type == 'finish':
                 print('Shortest path found to the goal is: {}'
                       .format(len(self.path)))
+                input()
 
         # Now move along that path
         move = self.path[0]
@@ -347,15 +348,18 @@ class Robot(object):
         tr = Point(x + self.grid_width, y - self.grid_width)
         br = Point(x + self.grid_width, y)
         if direction == 'u':
-            return Line(tl, tr)
+            line = Line(tl, tr)
         elif direction == 'r':
-            return Line(tr, br)
+            line = Line(tr, br)
         elif direction == 'd':
-            return Line(br, bl)
+            line = Line(br, bl)
         elif direction == 'l':
-            return Line(bl, tl)
+            line = Line(bl, tl)
         else:
             print('bad direction: {}'.format(direction))
+
+        line.setWidth(4)
+        return line
 
     def draw_rob(self):
         ''' Draws the robot in the maze. '''
@@ -384,6 +388,7 @@ class Robot(object):
 
         self.rob_icon.undraw()
         self.rob_icon = Polygon(p1, p2, p3)
+        self.rob_icon.setFill('olive drab')
         self.rob_icon.draw(self.win)
         pass
 
@@ -401,13 +406,18 @@ class Robot(object):
                    self.origin[1] - self.maze_dim * s)
         br = Point(self.origin[0] + self.maze_dim * s,
                    self.origin[1])
-        Line(bl, tl).draw(self.win)
-        Line(tl, tr).draw(self.win)
-        Line(tr, br).draw(self.win)
-        Line(br, bl).draw(self.win)
+        wall_l = Line(bl, tl)
+        wall_t = Line(tl, tr)
+        wall_r = Line(tr, br)
+        wall_b = Line(br, bl)
 
-        wall_r = self.wall_from_point(self.location, 'r')
-        wall_r.draw(self.win)
+        wall_start = self.wall_from_point(self.location, 'r')
+        wall_start
+
+        walls = [wall_l, wall_t, wall_r, wall_b, wall_start]
+        for wall in walls:
+            wall.setWidth(4)
+            wall.draw(self.win)
 
         self.rob_icon = Point(self.origin[0], self.origin[1])
         self.draw_rob()
