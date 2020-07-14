@@ -9,11 +9,27 @@ Path planing has become one of the forefront domains in artificial inteligence. 
 
 This project is simulated micromouse competition. A pre-generated maze is provided as well as a few python files to give a framework in which the robot can operate.
 
-* '''maze.py''': Loads a maze text file into memory and checks its validity.
-* '''showmaze.py''': Uses turtle to draw a .txt maze
-* '''tester.py''': Tests the robot in a maze
+* 'maze.py': Loads a maze text file into memory and checks its validity.
+* 'showmaze.py': Uses turtle to draw a .txt maze
+* 'tester.py': Tests the robot in a maze
 
-Lasly a template robot inteligence is provided in: '''robot.py'''. All of the code written for this project is here. It contains an algorithm for mapping, pathing, and drawing the maze from the sensor data.
+Lasly a template robot inteligence is provided in: 'robot.py'. All of the code written for this project is here. It contains an algorithm for mapping, pathing, and drawing the maze from the sensor data.
+
+## Problem Statement
+The goal of this project is to implement the create a robot AI that can navigate any maze provided and reach the goal. At each timestep, the robot will recieve sensor data from the tester and return it's choice of move. To do this the robot will have to do the following:
+
+1. Maintain an accurate record of it's current location
+2. Create a map of the environment from the sensor data
+3. Navigate towards the goal
+4. Do enough exploration to find the optimal path
+5. *bonus* Create a visualization of the AI (chosen path, explored nodes)
+
+I would expect the robot to be able to navigate any maze given if it has a valid path to the goal as well as to eventually find the optimal path. It should also create a visualization so that one can watch the robot to get an idea of how it is operating.
+
+## Metrics
+For this project the metric is stated by the competition as a score based on two runs of the maze. The first run is for exploration, while the second run is for reaching the goal as fast as possible. A lower score is better.
+
+$$score = # time steps in first run / 30 + # time steps in second run$$
 
 
 
