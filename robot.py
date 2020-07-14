@@ -186,6 +186,10 @@ class Robot(object):
 
             self.path = self.cur_node.get_path_to(current_goal)
 
+            # Draw the path
+            for node in self.path[:-1]:
+                self.color_node(node, 'path')
+
             if self.search_type == 'finish':
                 print('Shortest path found to the goal is: {}'
                       .format(len(self.path)))
@@ -290,7 +294,9 @@ class Robot(object):
         if type == 'frontier':
             cell.setFill('yellow')
         if type == 'visited':
-            cell.setFill('white')
+            cell.setFill('light grey')
+        if type == 'path':
+            cell.setFill('plum1')
 
     def init_draw_frontier(self):
         if not hasattr(self, 'drawn_cells'):
@@ -306,7 +312,7 @@ class Robot(object):
                 rect = Rectangle(Point(x, y), Point(x2, y2))
                 rect.draw(self.win)
                 rect.setOutline('white')
-                rect.setFill(color_rgb(230, 230, 230))
+                rect.setFill('white')
                 self.drawn_cells[node] = rect
 
         # for cell in self.drawn_cells:
