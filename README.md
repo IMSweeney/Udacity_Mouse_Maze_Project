@@ -1,6 +1,6 @@
 # Udacity_Mouse_Maze_Project
 Project for Udacity Data Analyst Capstone.
-![Frontier](/16x16_best_path.png)
+![Frontier16x16](/16x16_best_path.PNG)
 
 # Project Definition
 ## Project Overview
