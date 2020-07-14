@@ -557,7 +557,7 @@ class Robot(object):
 
         elif method == 'search_simple':
             rotation, movement = self.search_simple()
-            time.sleep(0.05)
+            # time.sleep(0.05)
             # key = self.win.getKey()
             # if key == 'q':
             #     exit('bye')

@@ -43,18 +43,49 @@ The goal will be to minimize this score.
 ---
 
 # Analysis
-## Data Explorations
+## Data Explorations / Visualizations
 *Features and calculated statistics relevant to the problem have been reported and discussed related to the dataset, and a thorough description of the input space or input data has been made. Abnormalities or characteristics about the data or input that need to be addressed have been identified.*
 
 Up to this point the maze and the robot have been theoretical. Now we will give them substance. The maze will be a grid of *n x n* squares, where *n* is an even number. There will be walls along the outside edge of the maze as well as many internal walls through which the robot cannot move. The robot will start on the bottom left corner of the maze and the goal will be any of the four squares in the center of the maze.
 
-Here is the 12 x 12 maze as an example:
-![12 x 12 maze](/12x12_start_goal.png)
+Here is the 12 x 12 maze as an example (from showmaze.py):
+![12 x 12 maze](/12x12_start_goal.PNG)
 
 As for the robot, it will occupy a single square and point in one of the four cardinal directions. It will also have three sensors on it's front, left, and right sides. These sensors will give the robot data about the walls. Specifically, each sensor will give an integer value for how many squares away a wall is in the direction of that sensor. In terms of movement, the robot can do two things on it's turn, move and rotate. It can rotate -90, 0, or 90 degrees clockwise, and it can move forwards or backwards up to three squares.
 
-![12 x 12 best path](/12x12_best_path.png)
+Let's take a look at that first example maze to get a better idea of what our robot is working with. The first thing that I notice is that the robot will have to move most (or even all) of the way to the right side of the maze to get to the goal. This means that any exploration done on the left half will be fairly useless. The next thing that I noticed is that there seem to be two main paths. One above the goal, and one below. The optimal path will be a variation of one of these. Perhaps the most interesting twist to this problem is that moves of three spaces and moves of one are weighted the same in terms of scoring. This would tend to reward path with fewer turns, rather that simply the shortest distance traveled. With all of this considered, I went to find the optimal path.
 
+![12 x 12 best path](/12x12_best_path.PNG)
+
+The pink squares are the moves that the robot will make (in this case in the optimal path to the goal). For this maze, the optimal path ended up being **17** moves long.
+
+
+## Benchmark
+To determine how efficient the robot is at mapping and path planning for these mazes it would be wise to develop a benchmark, or a score to shoot for.
+Take the 12x12 maze for example. For this maze the shortest possible path is 17 moves. Therfore, the best possible score would be 17 / 30 (for the first run) + 17 (for the second run), for a best score of **17.6**. Since this would be an unrealistic goal (requiring zero wrong moves) we will assume some inefficiency in the exploration phase. If approximately 50% of the cells need to be explored to find the best path this would correlate to 12 x 12 / 2 = 72 cells to explore, which would take 72 moves minimally. The score for this would be 72 / 30 + 17 = **19.4**. This process can be similarly performed for each maze size. The results of this are summarized in this table:
+
+| Size  | Optimal Path | Goal Score | My Score | Explore % |
+| ----- | ------------ | ---------- | -------- | --------- |
+| 12x12 | 17           | 19.4       | 22.0     | 0.7       |
+| 14x14 | 23           | 26.3       | 31.5	   | 0.7       |
+| 16x16 | 25           | 29.3       | 35.3	   | 0.7       |
+
+# Methodology
+## Data Preprocessing
+
+## Implementation
+
+## Refinement
+
+# Results
+## Model Evaluation and Validation
+
+## Justification
+
+# Conclusion
+## Reflection
+
+## Improvement
 
 
 
