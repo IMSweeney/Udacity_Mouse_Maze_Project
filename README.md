@@ -92,21 +92,21 @@ This is the simplest of the four by far, but it still has its challenges. The so
 
 ### Generating a Map
 At each time step new information is gained through sensor data. This data is used to add nodes to the graph. For each sensor direction, paths are added for every valid move. For example, if the front sensors sees a wall 5 steps away, lets label the 5 cells in front of the robot *c1* through *c5*. There are 9 valid edges here:
+
 *c1 - c2*, *c1 - c3*, *c1 - c4*
+
 *c2 - c3*, *c2 - c4*, *c2 - c5*
+
 *c3 - c4*, *c3 - c5*
+
 *c4 - c5*
 
 All of these edges would be added then added to the graph (if they do not already exist).
 
 ### Navigation
-To navigate to a given node, a modified version of the breadth-first search algorithm was borrowed from this [tutorial](https://www.redblobgames.com/pathfinding/a-star/introduction.html). Here is the method as implemented:
+To navigate to a given node, a modified version of the breadth-first search algorithm was borrowed from this [tutorial](https://www.redblobgames.com/pathfinding/a-star/introduction.html). Here is the algorithm as implemented in python:
 
-'''python
-if self == other:
-    print('This is an empty path')
-    return []
-
+```python
 frontier = Queue()
 frontier.put(self)
 came_from = {}
@@ -126,7 +126,7 @@ while current != self:
     current = came_from[current]
 path.reverse()
 return path
-'''
+```
 
 ## Refinement
 *The process of improving upon the algorithms and techniques used is clearly documented. Both the initial and final solutions are reported, along with intermediate solutions, if necessary.*

@@ -28,7 +28,7 @@ class Node():
             return []
 
         frontier = Queue()
-        frontier.put(self)
+        frontier.put(self)  # Add the current node to the fronier
         came_from = {}
         came_from[self] = None
 
