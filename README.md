@@ -74,8 +74,59 @@ Take the 12x12 maze for example. For this maze the shortest possible path is 17 
 ## Data Preprocessing
 *All preprocessing steps have been clearly documented. Abnormalities or characteristics about the data or input that needed to be addressed have been corrected. If no data preprocessing is necessary, it has been clearly justified.*
 
+For this project the Data pre-processing was minimal. The only data that the robot recieves is the sensor data. This data is based on heading (forward, left, and right sensors) rather than absolute direction. For my purposes it was more valuable to have the data in absolute directions, so the sensor data is converted using the heading of the robot to absolute directions (e.g. left, up, down).
+
 ## Implementation
 *The process for which metrics, algorithms, and techniques were implemented with the given datasets or input data has been thoroughly documented. Complications that occurred during the coding process are discussed.*
+
+Now to discuss how the robot works. The robot has two main functions: 
+1. Maintain an accurate record of it's current location
+2. Create a map of the environment from the sensor data
+3. Navigate towards the goal
+4. Do enough exploration to find the optimal path
+
+To perform each of these, a framework needed to be created to hold information about the maze. For this I chose to use a graph, where each node represents one of the cells of the maze. Edges between nodes represent valid, single-move paths between cells.
+
+### Maintaing an Accurate Location
+This is the simplest of the four by far, but it still has its challenges. The solution is to, at each timestep, use the previous sent move to update the current location of the robot. The challenge comes with invalid moves. If the robot were to update it's position when a move is rejected by the tester as invalid, it would be forever lost. This ends up being a non issue using the graph method to move, but with other methods each move would have to be first verified using the sensor data.
+
+### Generating a Map
+At each time step new information is gained through sensor data. This data is used to add nodes to the graph. For each sensor direction, paths are added for every valid move. For example, if the front sensors sees a wall 5 steps away, lets label the 5 cells in front of the robot *c1* through *c5*. There are 9 valid edges here:
+*c1 - c2*, *c1 - c3*, *c1 - c4*
+*c2 - c3*, *c2 - c4*, *c2 - c5*
+*c3 - c4*, *c3 - c5*
+*c4 - c5*
+
+All of these edges would be added then added to the graph (if they do not already exist).
+
+### Navigation
+To navigate to a given node, a modified version of the breadth-first search algorithm was borrowed from this [tutorial](https://www.redblobgames.com/pathfinding/a-star/introduction.html). Here is the method as implemented:
+
+'''python
+if self == other:
+    print('This is an empty path')
+    return []
+
+frontier = Queue()
+frontier.put(self)
+came_from = {}
+came_from[self] = None
+
+while not frontier.empty():
+    current = frontier.get()
+    for node in current.edges:
+        if node not in came_from:
+            frontier.put(node)
+            came_from[node] = current
+
+current = other
+path = []
+while current != self:
+    path.append(current)
+    current = came_from[current]
+path.reverse()
+return path
+'''
 
 ## Refinement
 *The process of improving upon the algorithms and techniques used is clearly documented. Both the initial and final solutions are reported, along with intermediate solutions, if necessary.*
@@ -95,6 +146,8 @@ Exploration as to why some techniques worked better than others, or how improvem
 
 ## Improvement
 *Discussion is made as to how at least one aspect of the implementation could be improved. Potential solutions resulting from these improvements are considered and compared/contrasted to the current solution.*
+
+Free form visualization section could go here
 
 
 # Alt
