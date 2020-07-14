@@ -1,6 +1,23 @@
 # Udacity_Mouse_Maze_Project
 Project for Udacity Data Analyst Capstone.
 
+# Project Definition
+## Project Overview
+*Student provides a high-level overview of the project. Background information such as the problem domain, the project origin, and related data sets or input data is provided.*
+
+Path planing has become one of the forefront domains in artificial inteligence. One common application is for the navigation of robots through a maze, such as in [Micromouse]https://en.wikipedia.org/wiki/Micromouse competitions. To make this possible there are several components. The first, environment sensing, involves the input of data about the environment through physical (or virtual) sensors. The second, SLAM, or simultanious localization and mapping involves the use of this sensor data to create a map of a given area while also maintaining some knowledge of the robot's position. The final piece is the path planning itself, generally an algorithm using a map of the environment and the location of the goal to plan the next best move.
+
+This project is simulated micromouse competition. A pre-generated maze is provided as well as a few python files to give a framework in which the robot can operate.
+
+* '''maze.py''': Loads a maze text file into memory and checks its validity.
+* '''showmaze.py''': Uses turtle to draw a .txt maze
+* '''tester.py''': Tests the robot in a maze
+
+Lasly a template robot inteligence is provided in: '''robot.py'''. All of the code written for this project is here. It contains an algorithm for mapping, pathing, and drawing the maze from the sensor data.
+
+
+
+
 ## Project Questions
 ### Data Explorations
 Use the robot specifications section to discuss how the robot will interpret and explore its environment. Additionally, one of the three mazes provided should be discussed in some detail, such as some interesting structural observations and one possible solution you have found to the goal (in number of steps). Try to aim for an optimal path, if possible!
