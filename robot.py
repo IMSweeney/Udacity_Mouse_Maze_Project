@@ -142,9 +142,19 @@ class Robot(object):
         self.frontier = set()
         self.visited = set()
         self.visited.add(self.cur_node)
-        self.search_type = 'find_goal'
-        self.explore_percent = .7
         self.path = []
+
+        self.search_type = 'find_goal'
+        # Percent of the maze to explore before switching to round 2
+        self.explore_percent = .7
+        # Weights for the find goal phase of the first round
+        self.weight1_goal_dist = 1
+        self.weight1_self_dist = 2
+        self.weight1_area_explored = 0
+        # Weights for the explore pahse of the first round
+        self.weight2_goal_dist = 0
+        self.weight2_self_dist = 1
+        self.weight2_area_explored = 0
 
     def search_simple(self):
         # Figure out what mode we are in
@@ -203,12 +213,13 @@ class Robot(object):
     def score_search_simple(self, node):
         score = 0
         if self.search_type == 'find_goal':
-            score += node.distance(self.goal_node)
-            score += 2.0 * node.distance(self.cur_node)
+            score += self.weight1_goal_dist * node.distance(self.goal_node)
+            score += self.weight1_self_dist * node.distance(self.cur_node)
+            score += self.weight1_area_explored * self.area_explored(node)
         elif self.search_type == 'explore':
-            # score += node.distance(self.goal_node)
-            score += node.distance(self.cur_node)
-            # score += 0.5 * self.area_explored(node)
+            score += self.weight2_goal_dist * node.distance(self.goal_node)
+            score += self.weight2_self_dist * node.distance(self.cur_node)
+            score += self.weight2_area_explored * self.area_explored(node)
 
         return score
 

@@ -79,7 +79,7 @@ For this project the Data pre-processing was minimal. The only data that the rob
 ## Implementation
 *The process for which metrics, algorithms, and techniques were implemented with the given datasets or input data has been thoroughly documented. Complications that occurred during the coding process are discussed.*
 
-Now to discuss how the robot works. The robot has two main functions: 
+Now to discuss how the robot works. The robot has four main functions: 
 1. Maintain an accurate record of it's current location
 2. Create a map of the environment from the sensor data
 3. Navigate towards the goal
@@ -104,7 +104,7 @@ At each time step new information is gained through sensor data. This data is us
 All of these edges would be added then added to the graph (if they do not already exist).
 
 ### Navigation
-To navigate to a given node, a modified version of the breadth-first search algorithm was borrowed from this [tutorial](https://www.redblobgames.com/pathfinding/a-star/introduction.html). Here is the algorithm as implemented in python:
+To navigate to a given node, a modified version of the breadth-first search algorithm was borrowed from this [tutorial](https://www.redblobgames.com/pathfinding/a-star/introduction.html) by Red Blob Games. Here is the algorithm as implemented in python:
 
 ```python
 frontier = Queue()
@@ -127,6 +127,18 @@ while current != self:
 path.reverse()
 return path
 ```
+
+Since breadth-first search always finds the optimal path this algorithm guarantees that we take the best path between two nodes.
+
+### Exploration
+The breadth-first algorithm described in the previous section is good but it cannot explore new nodes, only plan a path to nodes have already been seen. To remedy this we need another path planning algorithm one level above this. This algorithm works as follows:
+1. Each time a new node is added to the graph it is also added to a frontier set
+2. When a node is visited it is removed from the frontier
+3. If there is not currently a path being followed, choose the next frontier node to move to
+4. Find the path to this node using the breadth-first algorithm above
+5. move along this path
+
+How this path is chosen is borrowed from heuristic search algorithms like A\*. Each node on the frontier is scored based on a combination of aspects. The wrinkle for this specific problem is that this combination changes depending on the phase of exploration that the robot is in. Firstly, there are two runs of the maze. This heuristic scoring only applies to the first, or exploration run, since the second run always has the goal cells as the node to path to. Secondly, the first run can be split up into two phases: The first pahse is for simply finding the goal. For ...
 
 ## Refinement
 *The process of improving upon the algorithms and techniques used is clearly documented. Both the initial and final solutions are reported, along with intermediate solutions, if necessary.*
