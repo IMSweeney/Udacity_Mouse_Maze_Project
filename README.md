@@ -10,11 +10,11 @@ Path planing has become one of the forefront domains in artificial inteligence. 
 
 This project is simulated micromouse competition. A pre-generated maze is provided as well as a few python files to give a framework in which the robot can operate.
 
-* 'maze.py': Loads a maze text file into memory and checks its validity.
-* 'showmaze.py': Uses turtle to draw a .txt maze
-* 'tester.py': Tests the robot in a maze
+* `maze.py`: Loads a maze text file into memory and checks its validity.
+* `showmaze.py`: Uses turtle to draw a .txt maze
+* `tester.py`: Tests the robot in a maze
 
-Lasly a template robot inteligence is provided in: 'robot.py'. All of the code written for this project is here. It contains an algorithm for mapping, pathing, and drawing the maze from the sensor data.
+Lasly a template robot inteligence is provided in: `robot.py`. All of the code written for this project is here. It contains an algorithm for mapping, pathing, and drawing the maze from the sensor data.
 
 A much more detailed statement of this project can be found [here](https://docs.google.com/document/d/1ZFCH6jS3A5At7_v5IUM5OpAXJYiutFuSIjTzV_E-vdE/pub)
 
@@ -72,23 +72,32 @@ Take the 12x12 maze for example. For this maze the shortest possible path is 17 
 
 # Methodology
 ## Data Preprocessing
+*All preprocessing steps have been clearly documented. Abnormalities or characteristics about the data or input that needed to be addressed have been corrected. If no data preprocessing is necessary, it has been clearly justified.*
 
 ## Implementation
+*The process for which metrics, algorithms, and techniques were implemented with the given datasets or input data has been thoroughly documented. Complications that occurred during the coding process are discussed.*
 
 ## Refinement
+*The process of improving upon the algorithms and techniques used is clearly documented. Both the initial and final solutions are reported, along with intermediate solutions, if necessary.*
 
 # Results
 ## Model Evaluation and Validation
+*If a model is used, the following should hold: The final model’s qualities — such as parameters — are evaluated in detail. Some type of analysis is used to validate the robustness of the model’s solution.
+Alternatively a student may choose to answer questions with data visualizations or other means that don't involve machine learning if a different approach best helps them address their question(s) of interest.*
 
 ## Justification
+*The final results are discussed in detail.
+Exploration as to why some techniques worked better than others, or how improvements were made are documented.*
 
 # Conclusion
 ## Reflection
+*Student adequately summarizes the end-to-end problem solution and discusses one or two particular aspects of the project they found interesting or difficult.*
 
 ## Improvement
+*Discussion is made as to how at least one aspect of the implementation could be improved. Potential solutions resulting from these improvements are considered and compared/contrasted to the current solution.*
 
 
-
+# Alt
 ## Project Questions
 ### Data Explorations
 Use the robot specifications section to discuss how the robot will interpret and explore its environment. Additionally, one of the three mazes provided should be discussed in some detail, such as some interesting structural observations and one possible solution you have found to the goal (in number of steps). Try to aim for an optimal path, if possible!
