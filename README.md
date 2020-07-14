@@ -5,7 +5,7 @@ Project for Udacity Data Analyst Capstone.
 ## Project Overview
 *Student provides a high-level overview of the project. Background information such as the problem domain, the project origin, and related data sets or input data is provided.*
 
-Path planing has become one of the forefront domains in artificial inteligence. One common application is for the navigation of robots through a maze, such as in [Micromouse]https://en.wikipedia.org/wiki/Micromouse competitions. To make this possible there are several components. The first, environment sensing, involves the input of data about the environment through physical (or virtual) sensors. The second, SLAM, or simultanious localization and mapping involves the use of this sensor data to create a map of a given area while also maintaining some knowledge of the robot's position. The final piece is the path planning itself, generally an algorithm using a map of the environment and the location of the goal to plan the next best move.
+Path planing has become one of the forefront domains in artificial inteligence. One common application is for the navigation of robots through a maze, such as in [Micromouse](https://en.wikipedia.org/wiki/Micromouse) competitions. To make this possible there are several components. The first, environment sensing, involves the input of data about the environment through physical (or virtual) sensors. The second, SLAM, or simultanious localization and mapping involves the use of this sensor data to create a map of a given area while also maintaining some knowledge of the robot's position. The final piece is the path planning itself, generally an algorithm using a map of the environment and the location of the goal to plan the next best move.
 
 This project is simulated micromouse competition. A pre-generated maze is provided as well as a few python files to give a framework in which the robot can operate.
 
@@ -15,7 +15,11 @@ This project is simulated micromouse competition. A pre-generated maze is provid
 
 Lasly a template robot inteligence is provided in: 'robot.py'. All of the code written for this project is here. It contains an algorithm for mapping, pathing, and drawing the maze from the sensor data.
 
+A much more detailed statement of this project can be found [here](https://docs.google.com/document/d/1ZFCH6jS3A5At7_v5IUM5OpAXJYiutFuSIjTzV_E-vdE/pub)
+
 ## Problem Statement
+*The problem which needs to be solved is clearly defined. A strategy for solving the problem, including discussion of the expected solution, has been made.*
+
 The goal of this project is to implement the create a robot AI that can navigate any maze provided and reach the goal. At each timestep, the robot will recieve sensor data from the tester and return it's choice of move. To do this the robot will have to do the following:
 
 1. Maintain an accurate record of it's current location
@@ -26,14 +30,27 @@ The goal of this project is to implement the create a robot AI that can navigate
 
 I would expect the robot to be able to navigate any maze given if it has a valid path to the goal as well as to eventually find the optimal path. It should also create a visualization so that one can watch the robot to get an idea of how it is operating.
 
-A much more detailed statement of this project can be found [here]https://docs.google.com/document/d/1ZFCH6jS3A5At7_v5IUM5OpAXJYiutFuSIjTzV_E-vdE/pub
-
 ## Metrics
-For this project the metric is stated by the competition as a score based on two runs of the maze. The first run is for exploration, while the second run is for reaching the goal as fast as possible. A lower score is better.
+*Metrics used to measure performance of a model or result are clearly defined. Metrics are justified based on the characteristics of the problem.*
+
+For this project the metric is stated by the competition as a score based on two runs of the maze. The first run is for exploration, while the second run is for reaching the goal as fast as possible.
 
 $score = time steps in first run / 30 + time steps in second run$
 
+The goal will be to minimize this score.
 
+===
+
+# Analysis
+## Data Explorations
+*Features and calculated statistics relevant to the problem have been reported and discussed related to the dataset, and a thorough description of the input space or input data has been made. Abnormalities or characteristics about the data or input that need to be addressed have been identified.*
+
+Up to this point the maze and the robot have been theoretical. Now we will give them substance. The maze will be a grid of *n x n* squares, where *n* is an even number. There will be walls along the outside edge of the maze as well as many internal walls through which the robot cannot move. The robot will start on the bottom left corner of the maze and the goal will be any of the four squares in the center of the maze.
+
+Here is the 12 x 12 maze as an example:
+![12 x 12 maze](12x12_start_goal.ai)
+
+As for the robot, it will occupy a single square and point in one of the four cardinal directions. It will also have three sensors on it's front, left, and right sides. These sensors will give the robot data about the walls. Specifically, each sensor will give an integer value for how many squares away a wall is in the direction of that sensor. In terms of movement, the robot can do two things on it's turn, move and rotate. It can rotate -90, 0, or 90 degrees clockwise, and it can move forwards or backwards up to three squares.
 
 
 ## Project Questions
