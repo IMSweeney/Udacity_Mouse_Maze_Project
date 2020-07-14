@@ -22,14 +22,16 @@ The goal of this project is to implement the create a robot AI that can navigate
 2. Create a map of the environment from the sensor data
 3. Navigate towards the goal
 4. Do enough exploration to find the optimal path
-5. *bonus* Create a visualization of the AI (chosen path, explored nodes)
+5. *Bonus*: Create a visualization of the AI (chosen path, explored nodes)
 
 I would expect the robot to be able to navigate any maze given if it has a valid path to the goal as well as to eventually find the optimal path. It should also create a visualization so that one can watch the robot to get an idea of how it is operating.
+
+A much more detailed statement of this project can be found [here]https://docs.google.com/document/d/1ZFCH6jS3A5At7_v5IUM5OpAXJYiutFuSIjTzV_E-vdE/pub
 
 ## Metrics
 For this project the metric is stated by the competition as a score based on two runs of the maze. The first run is for exploration, while the second run is for reaching the goal as fast as possible. A lower score is better.
 
-$$score = # time steps in first run / 30 + # time steps in second run$$
+$score = time steps in first run / 30 + time steps in second run$
 
 
 
