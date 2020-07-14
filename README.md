@@ -1,6 +1,6 @@
 # Udacity_Mouse_Maze_Project
 Project for Udacity Data Analyst Capstone.
-![Frontier](12x12_start_goal.png)
+![Frontier](16x16_best_path.png)
 
 # Project Definition
 ## Project Overview
@@ -53,7 +53,7 @@ Here is the 12 x 12 maze as an example:
 
 As for the robot, it will occupy a single square and point in one of the four cardinal directions. It will also have three sensors on it's front, left, and right sides. These sensors will give the robot data about the walls. Specifically, each sensor will give an integer value for how many squares away a wall is in the direction of that sensor. In terms of movement, the robot can do two things on it's turn, move and rotate. It can rotate -90, 0, or 90 degrees clockwise, and it can move forwards or backwards up to three squares.
 
-
+![12 x 12 best path](12x12_best_path.png)
 
 
 
