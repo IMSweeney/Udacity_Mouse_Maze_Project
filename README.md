@@ -32,7 +32,7 @@ I would expect the robot to be able to navigate any maze given if it has a valid
 
 For this project the metric is stated by the competition as a score based on two runs of the maze. The first run is for exploration, while the second run is for reaching the goal as fast as possible.
 
-$score = time steps in first run / 30 + time steps in second run$
+*score = time steps in first run / 30 + time steps in second run*
 
 The goal will be to minimize this score.
 
@@ -165,6 +165,7 @@ return score
 From some manual attempts to tune the weights on this score I was not able to find a combination of parameters that gave a better score. Because of this the weights for this heuristic were left at 0.
 
 The next task was to attempt to tune the hyper-parameters. For this task I used a brute force method. The robot was run a few thousand times through each maze. Each time with a set of random hyper-parameters with the following ranges (inclusive on both ends):
+
 | Parameter               | Low  | High | Interval |
 | ----------------------- | ---- | ---- | -------- |
 | `explore_percent`       | 0    | 1    | 0.1      |
@@ -176,6 +177,7 @@ The next task was to attempt to tune the hyper-parameters. For this task I used 
 | `weight2_area_explored` | 0    | 4    | 1        |
 
 The result of each run was written as an entry in a csv along with the maze dimentions and the parameters used. By grouping these entries by the parameters used and sorting by the sum of scores across the three mazes I was able to find a combination of parameters that were effective for all of the mazes in question. The weights for explored area for each run are ommitted since the best value was zero for all of the best scores.
+
 | explore_percent | w1_goal | w1_self | w2_goal | w2_self | sum score |
 | --------------- | ------- | ------- | ------- | ------- | --------- |
 | 0.5             | 1       | 3       | 2       | 3       | 82.46     |
@@ -196,12 +198,14 @@ Using this random scattershot approach I was able to find sets of parameters tha
 | 16x16 | 25           | 29.3       | 31.1	   | 0.0: 1-3-2-3 |
 
 Notice the `explore_percent` of close to zero for the 12x12 and 16x16 mazes. In each of these cases, the optimum path is found during the find goal phase of the first run. This is essentially an overfitting of the parameters to those specific mazes. To attempt to remedy this the parameters found in the previous section that take into account the sum of scores accross all three mazes will be used. Here are those parameters:
+
 | explore_percent | w1_goal | w1_self | w2_goal | w2_self |
 | --------------- | ------- | ------- | ------- | ------- |
 | 0.5             | 1       | 3       | 2       | 3       |
 |                                                         |
 
 For this set of parameters, these were the scores on each of the three test mazes:
+
 | Size  | Optimal Path | Goal Score | My Score     |
 | ----- | ------------ | ---------- | ------------ |
 | 12x12 | 17           | 19.4       | **21.0**     |
