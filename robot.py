@@ -172,6 +172,8 @@ class Robot(object):
         self.path = []
 
         self.search_type = 'find_goal'
+        # Best found weights:
+        #   [0.5, 1, 3, 0, 2, 3, 0]
         # Percent of the maze to explore before switching to round 2
         self.explore_percent = 0.5
         # Weights for the find goal phase of the first round

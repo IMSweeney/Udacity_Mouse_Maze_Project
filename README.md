@@ -212,12 +212,6 @@ For this set of parameters, these were the scores on each of the three test maze
 | 14x14 | 23           | 26.3       | **28.0**     |
 | 16x16 | 25           | 29.3       | **32.4**     |
 
-## Justification
-*The final results are discussed in detail.
-Exploration as to why some techniques worked better than others, or how improvements were made are documented.*
-
-adfsa
-
 
 # Conclusion
 ## Reflection
