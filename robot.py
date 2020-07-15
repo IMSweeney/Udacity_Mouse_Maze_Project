@@ -186,8 +186,8 @@ class Robot(object):
 
         # User options
         self.random_weights = False  # Randomize the heuristic weights
-        self.writing_data = True  # Write data (score/params) to csv
-        self.wait_for_user = True  # Wait for user input before 2nd run
+        self.writing_data = False  # Write data (score/params) to csv
+        self.wait_for_user = False  # Wait for user input before 2nd run
         self.do_draw = True  # Enable drawing of the maze and path
 
         self.init_search_simple()
@@ -378,8 +378,9 @@ class Robot(object):
         return self.move_along_edge(move)
 
     def score_search_simple(self, node):
-        """ 
-        Takes in a node on the frontier and scores is so that the next node to move to can be chosen.
+        """
+        Takes in a node on the frontier and scores is so that the next node to
+        move to can be chosen.
 
         Parameters:
         node (Node): The frontier node to score.
@@ -411,7 +412,7 @@ class Robot(object):
         node (Node): The node around which to measure.
 
         Returns:
-        score (float): A score based on the number of explored nodes and their 
+        score (float): A score based on the number of explored nodes and their
             distance from node. A larger magnitude negative means that the
             area is more exlplored.
         """
@@ -428,7 +429,9 @@ class Robot(object):
 
     def move_along_edge(self, edge):
         """
-        Determines a (rotation, movement) command based on the the move required to go from the current location to the destination defined by the Node edge.
+        Determines a (rotation, movement) command based on the the move
+        required to go from the current location to the destination defined by
+        the Node edge.
 
         Parameters:
         edge (Node): The node to move to.
