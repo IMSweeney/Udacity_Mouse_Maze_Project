@@ -795,8 +795,3 @@ class Robot(object):
             self.update_heading_location(rotation, movement)
 
         return rotation, movement
-
-
-if __name__ == '__main__':
-    rob = Robot(12)
-    rob.win.close()
