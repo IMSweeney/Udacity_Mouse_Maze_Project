@@ -181,7 +181,7 @@ The next task was to attempt to tune the hyper-parameters. For this task I used 
 | `weight2_self_dist`     | 0    | 4    | 1        |
 | `weight2_area_explored` | 0    | 4    | 1        |
 
-The result of each run was written as an entry in a csv along with the maze dimentions and the parameters used. By grouping these entries by the parameters used and sorting by the sum of scores across the three mazes I was able to find a combination of parameters that were effective for all of the mazes in question.
+The result of each run was written as an entry in a csv along with the maze dimentions and the parameters used. By grouping these entries by the parameters used and sorting by the sum of scores across the three mazes I was able to find a combination of parameters that were effective for all of the mazes in question. The weights for explored area for each run are ommitted since the best value was zero for all of the best scores.
 | `explore_percent` | `w1_goal` | `w1_self` | `w2_goal` | `w2_self` | `sum score` |
 | ----------------- | --------- | --------- | --------- | --------- | ----------- |
 | 0.5               | 1         | 3         | 2         | 3         | 82.46       |
@@ -192,13 +192,25 @@ The result of each run was written as an entry in a csv along with the maze dime
 *If a model is used, the following should hold: The final model’s qualities — such as parameters — are evaluated in detail. Some type of analysis is used to validate the robustness of the model’s solution.
 Alternatively a student may choose to answer questions with data visualizations or other means that don't involve machine learning if a different approach best helps them address their question(s) of interest.*
 
-| `explore_percent` | `w_goal_dist` | `w_self_dist` | 
+Using this random scattershot approach I was able to find sets of parameters that performed very well for each of the three starter mazes. For each of these tables the parameters will be listed as one value with the format of `explore_percent`: `weight1_goal_dist` - `weight1_self_dist` - `weight2_goal_dist` - `weight2_self_dist`. The area explored weights will be omitted as they were 0.
 
-| Size  | Optimal Path | Goal Score | My Score | Explore % |
-| ----- | ------------ | ---------- | -------- | --------- |
-| 12x12 | 17           | 19.4       | 22.0     | 0.7       |
-| 14x14 | 23           | 26.3       | 31.5	   | 0.7       |
-| 16x16 | 25           | 29.3       | 35.3	   | 0.7       |
+| Size  | Optimal Path | Goal Score | My Score | Parameters   |
+| ----- | ------------ | ---------- | -------- | ------------ |
+| 12x12 | 17           | 19.4       | 20.3     | 0.1: 1-3-0-3 |
+| 14x14 | 23           | 26.3       | 29.0	   | 0.5: 1-2-3-3 |
+| 16x16 | 25           | 29.3       | 31.1	   | 0.0: 1-3-2-3 |
+
+Notice the `explore_percent` of close to zero for the 12x12 and 16x16 mazes. In each of these cases, the optimum path is found during the find goal phase of the first run. This is essentially an overfitting of the parameters to those specific mazes. To attempt to remedy this the parameters found in the previous section that take into account the sum of scores accross all three mazes will be used. Here are those parameters:
+| `explore_percent` | `w1_goal` | `w1_self` | `w2_goal` | `w2_self` |
+| ----------------- | --------- | --------- | --------- | --------- |
+| 0.5               | 1         | 3         | 2         | 3         |
+
+For this set of parameters, these were the scores on each of the three test mazes:
+| Size  | Optimal Path | Goal Score | My Score     |
+| ----- | ------------ | ---------- | ------------ |
+| 12x12 | 17           | 19.4       | **21.0**     |
+| 14x14 | 23           | 26.3       | **28.0**     |
+| 16x16 | 25           | 29.3       | **32.4**     |
 
 ## Justification
 *The final results are discussed in detail.
