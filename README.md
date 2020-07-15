@@ -145,7 +145,6 @@ score = (
 weight1 corresponds to the weight during phase one (find goal), while weight2 would be for phase two (exploration). The first run is ended when a percentage of cells in the maze have been explored. This is defined by the `explore_percent` of the robot. The six weights for the heuristic and this `explore_percent` are the hyper-parameters of the robot. These parameters could be tuned to optimize the performance of the robot.
 
 ## Refinement
-*The process of improving upon the algorithms and techniques used is clearly documented. Both the initial and final solutions are reported, along with intermediate solutions, if necessary.*
 
 Towards the beginning of this project I was not using two separate round one phases, or even the distance to the current node as part of the heuristic. This resulted in a robot acting similar to a greedy search algorithm. By greedy I mean that it was always trying to explore the node closest to the goal. It would make very long movements up and down the height of the maze just to make one cell of progress at each of the disparate paths. It also would not find the optimal path, since it would begin run two as soon as it found the goal. A typical score for these runs was **28.7** on the 12x12 test maze. The next step was to add distance from the current node to the heuristic. Interestingly, this created closer of a depth first greedy algorithm, as the robot was likely to explore it's current path. After some tuning of the weights, (1 for the distance to the goal, 2 for the distance from the current node) this algorithm managed a score of **23.9** on the 12x12 maze. The last step was to add the second phase. For this phase the goal is to find the optimal path by exploring more of the maze. After tuning these parameters (0 for the goal distance weight, 1 for the self distance weight, 0.7 for the explore percent), this algorithm managed a score of **22.0** on the 12x12. The last improvement I attempted was to add an area explored measure to the heuristic. This was defined as follows:
 
@@ -185,8 +184,6 @@ The result of each run was written as an entry in a csv along with the maze dime
 
 # Results
 ## Model Evaluation and Validation
-*If a model is used, the following should hold: The final model’s qualities — such as parameters — are evaluated in detail. Some type of analysis is used to validate the robustness of the model’s solution.
-Alternatively a student may choose to answer questions with data visualizations or other means that don't involve machine learning if a different approach best helps them address their question(s) of interest.*
 
 Using this random scattershot approach I was able to find sets of parameters that performed very well for each of the three starter mazes. For each of these tables the parameters will be listed as one value with the format of `explore_percent`: `weight1_goal_dist` - `weight1_self_dist` - `weight2_goal_dist` - `weight2_self_dist`. The area explored weights will be omitted as they were 0.
 
@@ -213,7 +210,6 @@ For this set of parameters, these were the scores on each of the three test maze
 
 # Conclusion
 ## Reflection
-*Student adequately summarizes the end-to-end problem solution and discusses one or two particular aspects of the project they found interesting or difficult.*
 
 This project consisted of desinging a simple robot AI to navigate a maze. This robot had to perform 5 main functions to succed at this task:
 1. Maintain an accurate record of it's current location
@@ -226,7 +222,6 @@ It was scored based on a combination of the time it spent exploring and the time
 This project was especially difficult because the search was performed online and without full information of the maze. This differs from typical search in that after each move the knowledge that the robot possesses must be re-evaluated, which adds a significant wrinkle to the typical search methods. On the other hand, this is also a much more practical situation for path planning, which made the project much more interesting as well.
 
 ## Improvement
-*Discussion is made as to how at least one aspect of the implementation could be improved. Potential solutions resulting from these improvements are considered and compared/contrasted to the current solution.*
 
 The unfortunate truth of this path planning algorithm is that a lot of information is not fully used. For instance, cells that have been passed over in a move of more than one square should probably be weighted less on the frontier. Additionally, sections of the maze could probably be ruled as not needed to be explored with sufficient knowedge of their surroundings. These types of things would be taken into account by algorithms that confirm optimality of the path. The challenge is performing these algorithms online. 
 
