@@ -3,7 +3,6 @@
 
 # Project Definition
 ## Project Overview
-*Student provides a high-level overview of the project. Background information such as the problem domain, the project origin, and related data sets or input data is provided.*
 
 Path planing has become one of the forefront domains in artificial inteligence. One common application is for the navigation of robots through a maze, such as in [Micromouse](https://en.wikipedia.org/wiki/Micromouse) competitions. To make this possible there are several components. The first, environment sensing, involves the input of data about the environment through physical (or virtual) sensors. The second, SLAM, or simultanious localization and mapping involves the use of this sensor data to create a map of a given area while also maintaining some knowledge of the robot's position. The final piece is the path planning itself, generally an algorithm using a map of the environment and the location of the goal to plan the next best move.
 
@@ -18,7 +17,6 @@ Lasly a template robot inteligence is provided in: `robot.py`. All of the code w
 A much more detailed statement of this project can be found [here](https://docs.google.com/document/d/1ZFCH6jS3A5At7_v5IUM5OpAXJYiutFuSIjTzV_E-vdE/pub)
 
 ## Problem Statement
-*The problem which needs to be solved is clearly defined. A strategy for solving the problem, including discussion of the expected solution, has been made.*
 
 The goal of this project is to implement the create a robot AI that can navigate any maze provided and reach the goal. At each timestep, the robot will recieve sensor data from the tester and return it's choice of move. To do this the robot will have to do the following:
 
@@ -31,7 +29,6 @@ The goal of this project is to implement the create a robot AI that can navigate
 I would expect the robot to be able to navigate any maze given if it has a valid path to the goal as well as to eventually find the optimal path. It should also create a visualization so that one can watch the robot to get an idea of how it is operating.
 
 ## Metrics
-*Metrics used to measure performance of a model or result are clearly defined. Metrics are justified based on the characteristics of the problem.*
 
 For this project the metric is stated by the competition as a score based on two runs of the maze. The first run is for exploration, while the second run is for reaching the goal as fast as possible.
 
@@ -42,7 +39,6 @@ The goal will be to minimize this score.
 
 # Analysis
 ## Data Explorations / Visualizations
-*Features and calculated statistics relevant to the problem have been reported and discussed related to the dataset, and a thorough description of the input space or input data has been made. Abnormalities or characteristics about the data or input that need to be addressed have been identified.*
 
 Up to this point the maze and the robot have been theoretical. Now we will give them substance. The maze will be a grid of *n x n* squares, where *n* is an even number. There will be walls along the outside edge of the maze as well as many internal walls through which the robot cannot move. The robot will start on the bottom left corner of the maze and the goal will be any of the four squares in the center of the maze.
 
@@ -70,12 +66,10 @@ Take the 12x12 maze for example. For this maze the shortest possible path is 17 
 
 # Methodology
 ## Data Preprocessing
-*All preprocessing steps have been clearly documented. Abnormalities or characteristics about the data or input that needed to be addressed have been corrected. If no data preprocessing is necessary, it has been clearly justified.*
 
 For this project the Data pre-processing was minimal. The only data that the robot recieves is the sensor data. This data is based on heading (forward, left, and right sensors) rather than absolute direction. For my purposes, it was more valuable to have the data in absolute directions, so the sensor data is converted using the heading of the robot to absolute directions (e.g. left, up, down).
 
 ## Implementation
-*The process for which metrics, algorithms, and techniques were implemented with the given datasets or input data has been thoroughly documented. Complications that occurred during the coding process are discussed.*
 
 For this robot to be able to succesfully navigate the maze and find a goal it must perform four main functions: 
 1. Maintain an accurate record of it's current location
@@ -182,9 +176,10 @@ The next task was to attempt to tune the hyper-parameters. For this task I used 
 | `weight2_area_explored` | 0    | 4    | 1        |
 
 The result of each run was written as an entry in a csv along with the maze dimentions and the parameters used. By grouping these entries by the parameters used and sorting by the sum of scores across the three mazes I was able to find a combination of parameters that were effective for all of the mazes in question. The weights for explored area for each run are ommitted since the best value was zero for all of the best scores.
-| `explore_percent` | `w1_goal` | `w1_self` | `w2_goal` | `w2_self` | `sum score` |
-| ----------------- | --------- | --------- | --------- | --------- | ----------- |
-| 0.5               | 1         | 3         | 2         | 3         | 82.46       |
+| explore_percent | w1_goal | w1_self | w2_goal | w2_self | sum score |
+| --------------- | ------- | ------- | ------- | ------- | --------- |
+| 0.5             | 1       | 3       | 2       | 3       | 82.46     |
+|                                                                     |
 
 
 # Results
@@ -201,9 +196,10 @@ Using this random scattershot approach I was able to find sets of parameters tha
 | 16x16 | 25           | 29.3       | 31.1	   | 0.0: 1-3-2-3 |
 
 Notice the `explore_percent` of close to zero for the 12x12 and 16x16 mazes. In each of these cases, the optimum path is found during the find goal phase of the first run. This is essentially an overfitting of the parameters to those specific mazes. To attempt to remedy this the parameters found in the previous section that take into account the sum of scores accross all three mazes will be used. Here are those parameters:
-| `explore_percent` | `w1_goal` | `w1_self` | `w2_goal` | `w2_self` |
-| ----------------- | --------- | --------- | --------- | --------- |
-| 0.5               | 1         | 3         | 2         | 3         |
+| explore_percent | w1_goal | w1_self | w2_goal | w2_self |
+| --------------- | ------- | ------- | ------- | ------- |
+| 0.5             | 1       | 3       | 2       | 3       |
+|                                                         |
 
 For this set of parameters, these were the scores on each of the three test mazes:
 | Size  | Optimal Path | Goal Score | My Score     |
