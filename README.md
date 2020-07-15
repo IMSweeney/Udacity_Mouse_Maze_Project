@@ -168,20 +168,19 @@ The next task was to attempt to tune the hyper-parameters. For this task I used 
 
 | Parameter               | Low  | High | Interval |
 | ----------------------- | ---- | ---- | -------- |
-| `explore_percent`       | 0    | 1    | 0.1      |
-| `weight1_goal_dist`     | 0    | 4    | 1        |
-| `weight1_self_dist`     | 0    | 4    | 1        |
-| `weight1_area_explored` | 0    | 4    | 1        |
-| `weight2_goal_dist`     | 0    | 4    | 1        |
-| `weight2_self_dist`     | 0    | 4    | 1        |
-| `weight2_area_explored` | 0    | 4    | 1        |
+| explore_percent       | 0    | 1    | 0.1      |
+| weight1_goal_dist     | 0    | 4    | 1        |
+| weight1_self_dist     | 0    | 4    | 1        |
+| weight1_area_explored | 0    | 4    | 1        |
+| weight2_goal_dist     | 0    | 4    | 1        |
+| weight2_self_dist     | 0    | 4    | 1        |
+| weight2_area_explored | 0    | 4    | 1        |
 
 The result of each run was written as an entry in a csv along with the maze dimentions and the parameters used. By grouping these entries by the parameters used and sorting by the sum of scores across the three mazes I was able to find a combination of parameters that were effective for all of the mazes in question. The weights for explored area for each run are ommitted since the best value was zero for all of the best scores.
 
 | explore_percent | w1_goal | w1_self | w2_goal | w2_self | sum score |
 | --------------- | ------- | ------- | ------- | ------- | --------- |
 | 0.5             | 1       | 3       | 2       | 3       | 82.46     |
-|                                                                     |
 
 
 # Results
@@ -202,7 +201,6 @@ Notice the `explore_percent` of close to zero for the 12x12 and 16x16 mazes. In 
 | explore_percent | w1_goal | w1_self | w2_goal | w2_self |
 | --------------- | ------- | ------- | ------- | ------- |
 | 0.5             | 1       | 3       | 2       | 3       |
-|                                                         |
 
 For this set of parameters, these were the scores on each of the three test mazes:
 
