@@ -64,22 +64,22 @@ The pink squares are the moves that the robot will make (in this case in the opt
 To determine how efficient the robot is at mapping and path planning for these mazes it would be wise to develop a benchmark, or a score to shoot for.
 Take the 12x12 maze for example. For this maze the shortest possible path is 17 moves. Therfore, the best possible score would be 17 / 30 (for the first run) + 17 (for the second run), for a best score of **17.6**. Since this would be an unrealistic goal (requiring zero wrong moves) we will assume some inefficiency in the exploration phase. If approximately 50% of the cells need to be explored to find the best path this would correlate to 12 x 12 / 2 = 72 cells to explore, which would take 72 moves minimally. The score for this would be 72 / 30 + 17 = **19.4**. This process can be similarly performed for each maze size. The results of this are summarized in this table:
 
-| Size  | Optimal Path | Goal Score | My Score | Explore % |
-| ----- | ------------ | ---------- | -------- | --------- |
-| 12x12 | 17           | 19.4       | 22.0     | 0.7       |
-| 14x14 | 23           | 26.3       | 31.5	   | 0.7       |
-| 16x16 | 25           | 29.3       | 35.3	   | 0.7       |
+| Size  | Optimal Path | Goal Score |
+| ----- | ------------ | ---------- |
+| 12x12 | 17           | 19.4       |
+| 14x14 | 23           | 26.3       |
+| 16x16 | 25           | 29.3       |
 
 # Methodology
 ## Data Preprocessing
 *All preprocessing steps have been clearly documented. Abnormalities or characteristics about the data or input that needed to be addressed have been corrected. If no data preprocessing is necessary, it has been clearly justified.*
 
-For this project the Data pre-processing was minimal. The only data that the robot recieves is the sensor data. This data is based on heading (forward, left, and right sensors) rather than absolute direction. For my purposes it was more valuable to have the data in absolute directions, so the sensor data is converted using the heading of the robot to absolute directions (e.g. left, up, down).
+For this project the Data pre-processing was minimal. The only data that the robot recieves is the sensor data. This data is based on heading (forward, left, and right sensors) rather than absolute direction. For my purposes, it was more valuable to have the data in absolute directions, so the sensor data is converted using the heading of the robot to absolute directions (e.g. left, up, down).
 
 ## Implementation
 *The process for which metrics, algorithms, and techniques were implemented with the given datasets or input data has been thoroughly documented. Complications that occurred during the coding process are discussed.*
 
-Now to discuss how the robot works. The robot has four main functions: 
+For this robot to be able to succesfully navigate the maze and find a goal it must perform four main functions: 
 1. Maintain an accurate record of it's current location
 2. Create a map of the environment from the sensor data
 3. Navigate towards the goal
@@ -88,7 +88,7 @@ Now to discuss how the robot works. The robot has four main functions:
 To perform each of these, a framework needed to be created to hold information about the maze. For this I chose to use a graph, where each node represents one of the cells of the maze. Edges between nodes represent valid, single-move paths between cells.
 
 ### Maintaing an Accurate Location
-This is the simplest of the four by far, but it still has its challenges. The solution is to, at each timestep, use the previous sent move to update the current location of the robot. The challenge comes with invalid moves. If the robot were to update it's position when a move is rejected by the tester as invalid, it would be forever lost. This ends up being a non issue using the graph method to move, but with other methods each move would have to be first verified using the sensor data.
+This is the simplest of the four by far, but it still has its challenges. The solution used by this robot is to, at each timestep, use the previous sent move to update the current location of the robot. The challenge comes with invalid moves. If the robot were to update it's position when a move is rejected by the tester as invalid, it would be forever lost. This ends up being a non issue using the graph method to move since we always move along edges (and edges are defined as valid single moves), but with other methods each move would have to be first verified using the sensor data.
 
 ### Generating a Map
 At each time step new information is gained through sensor data. This data is used to add nodes to the graph. For each sensor direction, paths are added for every valid move. For example, if the front sensors sees a wall 5 steps away, lets label the 5 cells in front of the robot *c1* through *c5*. There are 9 valid edges here:
@@ -101,7 +101,7 @@ At each time step new information is gained through sensor data. This data is us
 
 *c4 - c5*
 
-All of these edges would be added then added to the graph (if they do not already exist).
+All of these edges would be added to the graph (if they do not already exist). Once this has been done for each of the three sensors, all of the nodes seen by the robot will have been added.
 
 ### Navigation
 To navigate to a given node, a modified version of the breadth-first search algorithm was borrowed from this [tutorial](https://www.redblobgames.com/pathfinding/a-star/introduction.html) by Red Blob Games. Here is the algorithm as implemented in python:
@@ -127,6 +127,8 @@ while current != self:
 path.reverse()
 return path
 ```
+`self` refers to the node currently occupied by the robot.
+`other` refers to the node we are navigating to
 
 Since breadth-first search always finds the optimal path this algorithm guarantees that we take the best path between two nodes.
 
@@ -134,13 +136,13 @@ Since breadth-first search always finds the optimal path this algorithm guarante
 The breadth-first algorithm described in the previous section is good but it cannot explore new nodes, only plan a path to nodes have already been seen. To remedy this we need another path planning algorithm one level above this. This algorithm works as follows:
 1. Each time a new node is added to the graph it is also added to a frontier set
 2. When a node is visited it is removed from the frontier
-3. If there is not currently a path being followed, choose the next frontier node to move to
+3. If there is not currently a path being followed, choose a new frontier node to move to
 4. Find the path to this node using the breadth-first algorithm above
-5. move along this path
+5. Move along this path
 
-How this path is chosen is borrowed from heuristic search algorithms like A\*. Each node on the frontier is scored based on a combination of aspects. The wrinkle for this specific problem is that this combination changes depending on the phase of exploration that the robot is in. Firstly, there are two runs of the maze. This heuristic scoring only applies to the first, or exploration run, since the second run always has the goal cells as the node to path to. Secondly, the first run can be split up into two phases: The first pahse is for simply finding the goal. In the second phase, once the goal has been found, the goal is to explore some portion of the rest of the maze to find the optimal path from start to goal. 
+How this path is chosen is borrowed from heuristic search algorithms like A\*. Each node on the frontier is scored based on a combination of aspects. The wrinkle for this specific problem is that this combination changes depending on the phase of exploration that the robot is in. There are two runs of the maze. At the start of the second run we will have already found a path to the goal and attempted to refine it. For this reason, no heuristic is needed. Simply navigate to the goal with breadth first search. However, durring the first run, the robot must both find the goal, and explore for the optimal path. Because of this, the first run can be split up into two phases: The first pahse is for simply finding the goal. In the second phase, once the goal has been found, the goal is to explore some portion of the rest of the maze to find the optimal path from start to goal. 
 
-For each phase, nodes on the frontier are scored as follows: 
+For each of these phases, nodes on the frontier are scored as follows: 
 ```python
 score = (
     self.weight1_goal_dist * node.distance(self.goal_node)
@@ -148,15 +150,38 @@ score = (
     + self.weight1_area_explored * self.area_explored(node)
 )
 ```
-weight1 corresponding to the weight during phase one, while weight2 would be for phase two. The first run is ended when a percentage of cells in the maze have been explored. This is defined by the `explore_percent` of the robot. The six weights for the heuristic and this `explore_percent` are the hyper-parameters of the robot. Tuning these will allow the robot to improve its score.
+weight1 corresponds to the weight during phase one (find goal), while weight2 would be for phase two (exploration). The first run is ended when a percentage of cells in the maze have been explored. This is defined by the `explore_percent` of the robot. The six weights for the heuristic and this `explore_percent` are the hyper-parameters of the robot. These parameters could be tuned to optimize the performance of the robot.
 
 ## Refinement
 *The process of improving upon the algorithms and techniques used is clearly documented. Both the initial and final solutions are reported, along with intermediate solutions, if necessary.*
+
+Towards the beginning of this project I was not using two separate round one phases, or even the distance to the current node as part of the heuristic. This resulted in a robot acting similar to a greedy search algorithm. By greedy I mean that it was always trying to explore the node closest to the goal. It would make very long movements up and down the height of the maze just to make one cell of progress at each of the disparate paths. It also would not find the optimal path, since it would begin run two as soon as it found the goal. A typical score for these runs was **28.7** on the 12x12 test maze. The next step was to add distance from the current node to the heuristic. Interestingly, this created closer of a depth first greedy algorithm, as the robot was likely to explore it's current path. After some tuning of the weights, (1 for the distance to the goal, 2 for the distance from the current node) this algorithm managed a score of **23.9** on the 12x12 maze. The last step was to add the second phase. For this phase the goal is to find the optimal path by exploring more of the maze. After tuning these parameters (0 for the goal distance weight, 1 for the self distance weight, 0.7 for the explore percent), this algorithm managed a score of **22.0** on the 12x12. The last improvement I attempted was to add an area explored measure to the heuristic. This was defined as follows:
+
+```python
+# Max score ~maze_dim for corner node with nothing visited
+score = 0
+for n in self.maze_map:
+    if n == node:
+        continue
+    if n not in self.visited:
+        dist = node.distance(n)
+        score += 1 / dist
+
+return score
+```
+
+From some manual attempts to tune the weights on this score I was not able to find a combination of parameters that gave a better score. Because of this the weights for this heuristic were left at 0.
 
 # Results
 ## Model Evaluation and Validation
 *If a model is used, the following should hold: The final model’s qualities — such as parameters — are evaluated in detail. Some type of analysis is used to validate the robustness of the model’s solution.
 Alternatively a student may choose to answer questions with data visualizations or other means that don't involve machine learning if a different approach best helps them address their question(s) of interest.*
+
+| Size  | Optimal Path | Goal Score | My Score | Explore % |
+| ----- | ------------ | ---------- | -------- | --------- |
+| 12x12 | 17           | 19.4       | 22.0     | 0.7       |
+| 14x14 | 23           | 26.3       | 31.5	   | 0.7       |
+| 16x16 | 25           | 29.3       | 35.3	   | 0.7       |
 
 ## Justification
 *The final results are discussed in detail.

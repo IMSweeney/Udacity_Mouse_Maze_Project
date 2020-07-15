@@ -146,7 +146,7 @@ class Robot(object):
 
         self.search_type = 'find_goal'
         # Percent of the maze to explore before switching to round 2
-        self.explore_percent = .7
+        self.explore_percent = 0.7
         # Weights for the find goal phase of the first round
         self.weight1_goal_dist = 1
         self.weight1_self_dist = 2
@@ -203,7 +203,7 @@ class Robot(object):
             if self.search_type == 'finish':
                 print('Shortest path found to the goal is: {}'
                       .format(len(self.path)))
-                input()
+                # input()
 
         # Now move along that path
         move = self.path[0]
