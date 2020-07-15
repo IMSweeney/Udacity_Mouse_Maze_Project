@@ -1,4 +1,4 @@
-![Frontier16x16](/16x16_best_path.PNG)
+![Frontier16x16](/images/16x16_best_path.PNG)
 
 
 # Project Definition
@@ -47,13 +47,13 @@ The goal will be to minimize this score.
 Up to this point the maze and the robot have been theoretical. Now we will give them substance. The maze will be a grid of *n x n* squares, where *n* is an even number. There will be walls along the outside edge of the maze as well as many internal walls through which the robot cannot move. The robot will start on the bottom left corner of the maze and the goal will be any of the four squares in the center of the maze.
 
 Here is the 12 x 12 maze as an example (from showmaze.py):
-![12 x 12 maze](/12x12_start_goal.PNG)
+![12 x 12 maze](/images/12x12_start_goal.PNG)
 
 As for the robot, it will occupy a single square and point in one of the four cardinal directions. It will also have three sensors on it's front, left, and right sides. These sensors will give the robot data about the walls. Specifically, each sensor will give an integer value for how many squares away a wall is in the direction of that sensor. In terms of movement, the robot can do two things on it's turn, move and rotate. It can rotate -90, 0, or 90 degrees clockwise, and it can move forwards or backwards up to three squares.
 
 Let's take a look at that first example maze to get a better idea of what our robot is working with. The first thing that I notice is that the robot will have to move most (or even all) of the way to the right side of the maze to get to the goal. This means that any exploration done on the left half will be fairly useless. The next thing that I noticed is that there seem to be two main paths. One above the goal, and one below. The optimal path will be a variation of one of these. Perhaps the most interesting twist to this problem is that moves of three spaces and moves of one are weighted the same in terms of scoring. This would tend to reward path with fewer turns, rather that simply the shortest distance traveled. With all of this considered, I went to find the optimal path.
 
-![12 x 12 best path](/12x12_best_path.PNG)
+![12 x 12 best path](/images/12x12_best_path.PNG)
 
 The pink squares are the moves that the robot will make (in this case in the optimal path to the goal). For this maze, the optimal path ended up being **17** moves long.
 
