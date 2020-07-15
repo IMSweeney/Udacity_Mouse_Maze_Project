@@ -213,13 +213,17 @@ class Robot(object):
     def score_search_simple(self, node):
         score = 0
         if self.search_type == 'find_goal':
-            score += self.weight1_goal_dist * node.distance(self.goal_node)
-            score += self.weight1_self_dist * node.distance(self.cur_node)
-            score += self.weight1_area_explored * self.area_explored(node)
+            score = (
+                self.weight1_goal_dist * node.distance(self.goal_node)
+                + self.weight1_self_dist * node.distance(self.cur_node)
+                + self.weight1_area_explored * self.area_explored(node)
+            )
         elif self.search_type == 'explore':
-            score += self.weight2_goal_dist * node.distance(self.goal_node)
-            score += self.weight2_self_dist * node.distance(self.cur_node)
-            score += self.weight2_area_explored * self.area_explored(node)
+            score = (
+                self.weight2_goal_dist * node.distance(self.goal_node)
+                + self.weight2_self_dist * node.distance(self.cur_node)
+                + self.weight2_area_explored * self.area_explored(node)
+            )
 
         return score
 

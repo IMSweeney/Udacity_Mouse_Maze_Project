@@ -138,7 +138,17 @@ The breadth-first algorithm described in the previous section is good but it can
 4. Find the path to this node using the breadth-first algorithm above
 5. move along this path
 
-How this path is chosen is borrowed from heuristic search algorithms like A\*. Each node on the frontier is scored based on a combination of aspects. The wrinkle for this specific problem is that this combination changes depending on the phase of exploration that the robot is in. Firstly, there are two runs of the maze. This heuristic scoring only applies to the first, or exploration run, since the second run always has the goal cells as the node to path to. Secondly, the first run can be split up into two phases: The first pahse is for simply finding the goal. For ...
+How this path is chosen is borrowed from heuristic search algorithms like A\*. Each node on the frontier is scored based on a combination of aspects. The wrinkle for this specific problem is that this combination changes depending on the phase of exploration that the robot is in. Firstly, there are two runs of the maze. This heuristic scoring only applies to the first, or exploration run, since the second run always has the goal cells as the node to path to. Secondly, the first run can be split up into two phases: The first pahse is for simply finding the goal. In the second phase, once the goal has been found, the goal is to explore some portion of the rest of the maze to find the optimal path from start to goal. 
+
+For each phase, nodes on the frontier are scored as follows: 
+```python
+score = (
+    self.weight1_goal_dist * node.distance(self.goal_node)
+    + self.weight1_self_dist * node.distance(self.cur_node)
+    + self.weight1_area_explored * self.area_explored(node)
+)
+```
+weight1 corresponding to the weight during phase one, while weight2 would be for phase two. The first run is ended when a percentage of cells in the maze have been explored. This is defined by the `explore_percent` of the robot. The six weights for the heuristic and this `explore_percent` are the hyper-parameters of the robot. Tuning these will allow the robot to improve its score.
 
 ## Refinement
 *The process of improving upon the algorithms and techniques used is clearly documented. Both the initial and final solutions are reported, along with intermediate solutions, if necessary.*
