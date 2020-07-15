@@ -12,7 +12,7 @@ This project is simulated micromouse competition. A pre-generated maze is provid
 * `showmaze.py`: Uses turtle to draw a .txt maze
 * `tester.py`: Tests the robot in a maze
 
-Lasly a template robot inteligence is provided in: `robot.py`. All of the code written for this project is here. It contains an algorithm for mapping, pathing, and drawing the maze from the sensor data.
+Lasly a template robot inteligence is provided in: `robot.py`. The majority of the code written for this project is here. It contains an algorithm for mapping, pathing, and drawing the maze from the sensor data.
 
 A much more detailed statement of this project can be found [here](https://docs.google.com/document/d/1ZFCH6jS3A5At7_v5IUM5OpAXJYiutFuSIjTzV_E-vdE/pub)
 
