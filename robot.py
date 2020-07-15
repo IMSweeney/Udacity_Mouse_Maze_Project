@@ -1,28 +1,61 @@
-import numpy as np
-import pandas as pd
+"""
+This module contains the Robot class for the Udacity Micromouse Maze Capstone
+Project.
+
+@Author: Ian Sweeney
+@Date: 07/15/2020
+"""
+
 from queue import Queue
 from graphics import *
+import numpy as np
+import pandas as pd
 
 
 class Node():
+    """
+    This class represtents one of the squares of the maze for use in a graph.
+
+    Attributes:
+        location (int, int): A tuple defining the x,y location of the node
+        edges (set): A set of nodes representing the edges of the graph.
+    """
+
     def __init__(self, x, y):
+        """ Initializes a node with an x and y position and no edges. """
         self.location = (x, y)
         self.edges = set()  # each edge is a tuple (other node, distance)
 
     def add_edge(self, other):
+        """ Takes in a node, other, and adds it to this nodes edges. """
         self.edges.add(other)
         other.edges.add(self)
 
     def wall_between(self, other):
+        """ Returns False if there is an edge between this node and other """
         return other not in self.edges
 
     def distance(self, other):
-        ''' Manhattan distance between this node and another. '''
+        """ Returns Manhattan distance between this node and other. """
         return (np.abs(self.location[0] - other.location[0]) +
                 np.abs(self.location[1] - other.location[1]))
 
     # From: https://www.redblobgames.com/pathfinding/a-star/introduction.html
     def get_path_to(self, other):
+        """
+        Gets a path (or list of nodes) from this node to other.
+
+        Uses a depth first search to find the shortest path from this node
+        (self) to another node (other). Adapted from code by Red Blob Games:
+        https://www.redblobgames.com/pathfinding/a-star/introduction.html
+
+        Parameters:
+        other (Node): The node on the graph to plan a path to.
+
+        Returns:
+        path (list): A list of nodes defining the steps to take from self to
+        other.
+        """
         if self == other:
             print('This is an empty path')
             return []
@@ -48,26 +81,88 @@ class Node():
         return path
 
     def __repr__(self):
+        """ Returns the location of this node as a string. """
         return str(self.location)
 
     def __eq__(self, other):
+        """ Returns true if this node and other occupy the same location. """
         return self.location == other.location
 
     def __hash__(self):
+        """ Returns a hash of the location to use as the object hash. """
         return hash(self.location)
 
     def __lt__(self, other):
+        """ Returns a random choice between self and other. """
         return np.random.choice([self, other])
 
 
 class Robot(object):
+    """
+    This is a class for the Robot (or Micromouse). It contains path planning
+    techniques, and map generation/ knowledge gathering. The next_move method
+    is the main runner, called by the tester class.
+
+    Attributes:
+        Basic info:
+        num_moves (int): The number of moves the robot has performed since the
+            last reset
+        score [float, float]: The number of moves for each run
+        location [int, int]: The current x, y location of the robot
+        heading (str): The current heading of the robot
+
+        maze_dim (int): The number of squares tall or wide the maze is.
+        headings (list): The list of valid headings
+        heading_to_sensor_direction_map (dict): Defines the absolute direction
+            for a given heading and sensor side.
+        max_move (int): The most squares the robot can move in one timestep.
+
+        Graph structure:
+        maze_map (2d list): An array of Nodes for each location in the maze
+        cur_node (Node): A node in maze_map at the current location
+        goal_node (Node): THe Node at the top right of the goal square.
+
+        Drawing parameters:
+        grid_width (int): width of a square in pixels.
+        origin (int, int): The origin of the maze in the drawing.
+
+        User options:
+        random_weights (bool): Randomize the heuristic weights
+        writing_data (bool): Write data (score/params) to csv
+        wait_for_user (bool): Wait for user input before 2nd run
+        do_draw (bool): Enable drawing of the maze and path
+
+        Path Planning:
+        frontier (set): A set of nodes that have been seen but not visited.
+        visited (set): A set of nodes that have been visited.
+        path (list): A list of nodes representing the current chosen path
+
+        search_type (str): Defines which phase of search the robot is in.
+        explore_percent (float): Percent of the maze to explore before
+            switching to round 2
+        weight1_goal_dist (int): Weight to apply to the distance to the goal
+            node during the first phase.
+        weight1_self_dist (int): Weight to apply to the distance to from the
+            current node during the first phase.
+        weight1_area_explored (int): Weight to apply to the amount of
+            surrounding area explored during the first phase.
+        weight2_goal_dist (int): Weight to apply to the distance to the goal
+            node during the second phase.
+        weight2_self_dist (int): Weight to apply to the distance to from the
+            current node during the second phase.
+        weight2_area_explored (int): Weight to apply to the amount of
+            surrounding area explored during the second phase.
+    """
+
     def __init__(self, maze_dim):
-        '''
-        Use the initialization function to set up attributes that your robot
-        will use to learn and navigate the maze. Some initial attributes are
-        provided based on common information, including the size of the maze
-        the robot is placed in.
-        '''
+        """
+        Set up attributes that the robot will use to learn and navigate the
+        maze. Some initial attributes are provided based on common
+        information, including the size of the maze the robot is placed in.
+
+        Paramters:
+        maze_dim (int): The number of squares tall or wide the maze is.
+        """
         self.num_moves = 0
         self.score = [0, 0]
 
@@ -106,6 +201,11 @@ class Robot(object):
             self.init_draw_frontier()
 
     def write_parameters_score_to_file(self):
+        """
+        If enabled, this function writes the current parameters and the run
+        score to the csv specified just before the last move is submitted to
+        the tester.
+        """
         data_file = 'parameters.csv'
         print('writing to {}'.format(data_file))
         data = {
@@ -125,7 +225,7 @@ class Robot(object):
     # ------------
     # Graph functions
     def initialize_map(self):
-        ''' returns a list of lists of nodes in the maze. '''
+        """ returns a list of lists of nodes in the maze. """
         maze_map = []
         for i in range(self.maze_dim):
             for j in range(self.maze_dim):
@@ -133,9 +233,19 @@ class Robot(object):
         return maze_map
 
     def get_node(self, location):
+        """ Takes in a location and returns the Node at that location. """
         return self.maze_map[location[0] * self.maze_dim + location[1]]
 
     def update_knowledge(self, sensors):
+        """
+        Takes in sensor information and adds edges to the graph based on this
+        information. Each edge added represents a valid single-turn move from
+        one node to another.
+
+        Parameters:
+        sensors (list): A list of the distance to the wall on the front, left,
+        and right of the robot.
+        """
         self.cur_node = self.get_node(self.location)
         sensor_directions = self.heading_to_sensor_direction_map[self.heading]
 
@@ -166,6 +276,11 @@ class Robot(object):
     #       https://www.redblobgames.com/pathfinding/a-star/introduction.html
     #
     def init_search_simple(self):
+        """
+        Set up attributes for the path planning algorithm used. Initializes
+        the frontier and visited sets and sets the starting search type as
+        well as the heuristic weights for scoring frontier nodes.
+        """
         self.frontier = set()
         self.visited = set()
         self.visited.add(self.cur_node)
@@ -198,6 +313,11 @@ class Robot(object):
             self.weight2_area_explored = 0
 
     def search_simple(self):
+        """
+        Implements a modified A* algorithm to navigate towards the goal and
+        find the optimal path.
+        """
+
         # Figure out what mode we are in
         if self.search_type == 'find_goal':
             if self.cur_node == self.goal_node:
@@ -258,6 +378,15 @@ class Robot(object):
         return self.move_along_edge(move)
 
     def score_search_simple(self, node):
+        """ 
+        Takes in a node on the frontier and scores is so that the next node to move to can be chosen.
+
+        Parameters:
+        node (Node): The frontier node to score.
+
+        Returns:
+        score (float): The score given to the node.
+        """
         score = 0
         if self.search_type == 'find_goal':
             score = (
@@ -275,6 +404,17 @@ class Robot(object):
         return score
 
     def area_explored(self, node):
+        """
+        A measure of how explored the area of the maze around node is.
+
+        Parameters:
+        node (Node): The node around which to measure.
+
+        Returns:
+        score (float): A score based on the number of explored nodes and their 
+            distance from node. A larger magnitude negative means that the
+            area is more exlplored.
+        """
         # Max score ~maze_dim for corner node with nothing visited
         score = 0
         for n in self.maze_map:
@@ -287,6 +427,16 @@ class Robot(object):
         return score
 
     def move_along_edge(self, edge):
+        """
+        Determines a (rotation, movement) command based on the the move required to go from the current location to the destination defined by the Node edge.
+
+        Parameters:
+        edge (Node): The node to move to.
+
+        Returns:
+        rotation (int): The amount of rotation required for the move.
+        movement (int): The amount of movement required for the move.
+        """
         dest = edge.location
         rotation = 0
         movement = 0
@@ -353,6 +503,9 @@ class Robot(object):
     # ------------
     # Drawing functions
     def color_node(self, node, type):
+        """
+        Applies color to a given node if drawing is enabled.
+        """
         if not self.do_draw:
             return
         cell = self.drawn_cells[node]
@@ -364,6 +517,9 @@ class Robot(object):
             cell.setFill('plum1')
 
     def init_draw_frontier(self):
+        """
+        Initializes the frontier for drawing by creating a list of drawn cells.
+        """
         if not hasattr(self, 'drawn_cells'):
             border = 2
             self.drawn_cells = {}
@@ -380,27 +536,19 @@ class Robot(object):
                 rect.setFill('white')
                 self.drawn_cells[node] = rect
 
-        # for cell in self.drawn_cells:
-        #     node = cell[0]
-        #     rect = cell[1]
-        #     if node in self.visited:
-        #         rect.setFill(color_rgb(230, 230, 230))
-        #     elif node in self.frontier:
-        #         rect.setFill('yellow')
-
     def wall_from_point(self, p, direction):
-        '''
+        """
         Returns a line object representing a wall
 
-            Parameters:
-                p (tuple): a point on the grid at which to create a wall
-                    indexed 0,0 as lower left corner
-                direction (str): a single character representing the side of
-                    the cell on which to create a wall
+        Parameters:
+            p (tuple): a point on the grid at which to create a wall
+                indexed 0,0 as lower left corner
+            direction (str): a single character representing the side of
+                the cell on which to create a wall
 
-            Returns:
-                wall (Line): a graphics module Line object
-        '''
+        Returns:
+            wall (Line): a graphics module Line object
+        """
 
         # get x,y of the lower left corner of the cell
         x = self.origin[0] + (p[0] * self.grid_width)
@@ -426,7 +574,7 @@ class Robot(object):
         return line
 
     def draw_rob(self):
-        ''' Draws the robot in the maze. '''
+        """ Draws the robot in the maze at its current location. """
         x = (self.origin[0] + (self.location[0] * self.grid_width) +
              self.grid_width / 2)
         y = (self.origin[1] - (self.location[1] * self.grid_width) -
@@ -457,7 +605,7 @@ class Robot(object):
         pass
 
     def initialize_window(self):
-        ''' Initializes the draw window. '''
+        """ Initializes the draw window. """
         s = self.grid_width
         self.win = GraphWin('Maze', (self.maze_dim + 2) * s,
                             (self.maze_dim + 2) * s)
@@ -488,7 +636,7 @@ class Robot(object):
         pass
 
     def draw_robot_view(self, sensors):
-        ''' Uses the sensor data to draw what the robot can see. '''
+        """ Uses the sensor data to draw what the robot can see. """
         walls = []
 
         x, y = self.location[0], self.location[1]
@@ -535,7 +683,13 @@ class Robot(object):
     # ------------
     # Update knowledge
     def update_heading_location(self, rotation, movement):
-        ''' Updates the robot's heading and location based on the move. '''
+        """
+        Updates the robot's heading and location based on the move.
+
+        Parameters:
+        rotation (int): The rotation of the next move to be sent in deg.
+        movement (int): The number of squares for the next move.
+        """
         # Update the heading
         heading_index = self.headings.index(self.heading)
         heading_index = heading_index + int(rotation / 90)
@@ -557,7 +711,7 @@ class Robot(object):
         pass
 
     def reset_heading_location(self):
-        ''' Resets the heading and location to the start. '''
+        """ Resets the heading and location to the start. """
         self.location = [0, 0]
         self.heading = 'up'
         pass
@@ -565,26 +719,28 @@ class Robot(object):
 
     # ------------
     def next_move(self, sensors):
-        '''
-        Use this function to determine the next move the robot should make,
-        based on the input from the sensors after its previous move. Sensor
-        inputs are a list of three distances from the robot's left, front, and
-        right-facing sensors, in that order.
+        """
+        This function determines the next move that the robot will make.
+        Additionally it performs a few more funtions to enable this.
+        1. Draw the robot and the maze
+        2. Update the graph with sensor data.
+        3. Choose the next move.
+        4. Update the internal heading and location of the bot
 
-        Outputs should be a tuple of two values. The first value indicates
-        robot rotation (if any), as a number: 0 for no rotation, +90 for a
-        90-degree rotation clockwise, and -90 for a 90-degree rotation
-        counterclockwise. Other values will result in no rotation. The second
-        value indicates robot movement, and the robot will attempt to move the
-        number of indicated squares: a positive number indicates forwards
-        movement, while a negative number indicates backwards movement. The
-        robot may move a maximum of three units per turn. Any excess movement
-        is ignored.
+        There are three input methods available:
+        tuple - The user inputs a rotation and movement as a tuple.
+        arrow - The user can control the bot with the arrow keys.
+        search_simple - The robot uses the search_simple alorithm to determine
+            it's next move.
 
-        If the robot wants to end a run (e.g. during the first training run in
-        the maze) then returing the tuple ('Reset', 'Reset') will indicate to
-        the tester to end the run and return the robot to the start.
-        '''
+        Parameters:
+        sensors (list): A list of the distance to the wall on the front, left,
+        and right of the robot.
+
+        Returns:
+        rotation (int): The amount of rotation required for the move.
+        movement (int): The amount of movement required for the move.
+        """
         rotations = ['Reset', -90, 0, 90]
         movements = ['Reset', -3, -2, -1, 0, 1, 2, 3]
         method = 'search_simple'
