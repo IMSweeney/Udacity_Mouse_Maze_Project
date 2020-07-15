@@ -1,6 +1,6 @@
 import numpy as np
+import pandas as pd
 from queue import Queue
-import time
 from graphics import *
 
 
@@ -68,6 +68,9 @@ class Robot(object):
         provided based on common information, including the size of the maze
         the robot is placed in.
         '''
+        self.num_moves = 0
+        self.score = [0, 0]
+
         self.location = [0, 0]
         self.heading = 'up'
         self.maze_dim = maze_dim
@@ -85,15 +88,38 @@ class Robot(object):
         # just one of the goal nodes but it's fine...
         self.goal_node = self.get_node((int(self.maze_dim / 2),
                                         int(self.maze_dim / 2)))
-        self.init_search_simple()
 
-        self.do_draw = True
+        # Define whether to randomize the weights for search simple
+        self.random_weights = True
+        self.writing_data = True
+        self.wait_for_user = False
+        self.init_search_simple()
+        print(self.maze_dim)
+
+        self.do_draw = False
         if self.do_draw:
             self.grid_width = 40
             self.origin = (self.grid_width,
                            (self.maze_dim - 1 + 2) * self.grid_width)
             self.initialize_window()
             self.init_draw_frontier()
+
+    def write_parameters_score_to_file(self):
+        data_file = 'parameters.csv'
+        print('writing to {}'.format(data_file))
+        data = {
+            'dim': self.maze_dim,
+            'score': np.round(self.score[0] / 30 + self.score[1], 2),
+            'explore_percent': self.explore_percent,
+            'w1_goal': self.weight1_goal_dist,
+            'w1_self': self.weight1_self_dist,
+            'w1_area': self.weight1_area_explored,
+            'w2_goal': self.weight2_goal_dist,
+            'w2_self': self.weight2_self_dist,
+            'w2_area': self.weight2_area_explored
+        }
+        data = pd.DataFrame([data])
+        data.to_csv(data_file, mode='a', header=False)
 
     # ------------
     # Graph functions
@@ -146,15 +172,27 @@ class Robot(object):
 
         self.search_type = 'find_goal'
         # Percent of the maze to explore before switching to round 2
-        self.explore_percent = 0.7
+        self.explore_percent = 0.5
         # Weights for the find goal phase of the first round
         self.weight1_goal_dist = 1
-        self.weight1_self_dist = 2
+        self.weight1_self_dist = 3
         self.weight1_area_explored = 0
         # Weights for the explore pahse of the first round
         self.weight2_goal_dist = 0
         self.weight2_self_dist = 1
         self.weight2_area_explored = 0
+
+        if (self.random_weights):
+            self.explore_percent = np.round(np.random.random(), 1)
+            # Weights for the find goal phase of the first round
+            max_weight = 4
+            self.weight1_goal_dist = 1
+            self.weight1_self_dist = 3
+            self.weight1_area_explored = 0
+            # Weights for the explore pahse of the first round
+            self.weight2_goal_dist = np.random.randint(0, max_weight)
+            self.weight2_self_dist = np.random.randint(0, max_weight)
+            self.weight2_area_explored = 0
 
     def search_simple(self):
         # Figure out what mode we are in
@@ -203,7 +241,13 @@ class Robot(object):
             if self.search_type == 'finish':
                 print('Shortest path found to the goal is: {}'
                       .format(len(self.path)))
-                # input()
+                # Wait for user before performing run two
+                if self.wait_for_user:
+                    input('Press enter to continue:')
+                # Write scores and params to a file on the last move
+                if self.writing_data:
+                    self.score[1] = len(self.path)
+                    self.write_parameters_score_to_file()
 
         # Now move along that path
         move = self.path[0]
@@ -235,7 +279,7 @@ class Robot(object):
                 continue
             if n not in self.visited:
                 dist = node.distance(n)
-                score += 1 / dist
+                score -= 1 / dist
 
         return score
 
@@ -306,6 +350,8 @@ class Robot(object):
     # ------------
     # Drawing functions
     def color_node(self, node, type):
+        if not self.do_draw:
+            return
         cell = self.drawn_cells[node]
         if type == 'frontier':
             cell.setFill('yellow')
@@ -540,10 +586,12 @@ class Robot(object):
         movements = ['Reset', -3, -2, -1, 0, 1, 2, 3]
         method = 'search_simple'
 
-        self.draw_rob()
-        self.draw_robot_view(sensors)
-        # self.draw_maze_from_knowledge()
+        if self.do_draw:
+            self.draw_rob()
+            self.draw_robot_view(sensors)
+            # self.draw_maze_from_knowledge()
 
+        self.num_moves += 1
         self.update_knowledge(sensors)
 
         if method == 'tuple':
@@ -572,10 +620,6 @@ class Robot(object):
 
         elif method == 'search_simple':
             rotation, movement = self.search_simple()
-            # time.sleep(0.05)
-            # key = self.win.getKey()
-            # if key == 'q':
-            #     exit('bye')
 
         if rotation not in rotations:
             print('invalid rotation')
@@ -584,14 +628,13 @@ class Robot(object):
             print('invalid movement')
             movement = 0
 
-        # print({'move_type': self.search_type, 'sensors': sensors})
-
         if (rotation, movement) == ('Reset', 'Reset'):
             self.reset_heading_location()
+            self.score[0] = self.num_moves
+            self.num_moves = 0
         else:
             self.update_heading_location(rotation, movement)
 
-        # print('Attempting Move: {}, {}'.format(rotation, movement))
         return rotation, movement
 
 

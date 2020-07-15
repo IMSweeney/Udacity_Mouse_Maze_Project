@@ -1,6 +1,5 @@
-# Udacity_Mouse_Maze_Project
-Project for Udacity Data Analyst Capstone.
 ![Frontier16x16](/16x16_best_path.PNG)
+---
 
 # Project Definition
 ## Project Overview
@@ -39,7 +38,6 @@ For this project the metric is stated by the competition as a score based on two
 $score = time steps in first run / 30 + time steps in second run$
 
 The goal will be to minimize this score.
-
 ---
 
 # Analysis
@@ -59,7 +57,6 @@ Let's take a look at that first example maze to get a better idea of what our ro
 
 The pink squares are the moves that the robot will make (in this case in the optimal path to the goal). For this maze, the optimal path ended up being **17** moves long.
 
-
 ## Benchmark
 To determine how efficient the robot is at mapping and path planning for these mazes it would be wise to develop a benchmark, or a score to shoot for.
 Take the 12x12 maze for example. For this maze the shortest possible path is 17 moves. Therfore, the best possible score would be 17 / 30 (for the first run) + 17 (for the second run), for a best score of **17.6**. Since this would be an unrealistic goal (requiring zero wrong moves) we will assume some inefficiency in the exploration phase. If approximately 50% of the cells need to be explored to find the best path this would correlate to 12 x 12 / 2 = 72 cells to explore, which would take 72 moves minimally. The score for this would be 72 / 30 + 17 = **19.4**. This process can be similarly performed for each maze size. The results of this are summarized in this table:
@@ -69,6 +66,7 @@ Take the 12x12 maze for example. For this maze the shortest possible path is 17 
 | 12x12 | 17           | 19.4       |
 | 14x14 | 23           | 26.3       |
 | 16x16 | 25           | 29.3       |
+---
 
 # Methodology
 ## Data Preprocessing
@@ -172,10 +170,26 @@ return score
 
 From some manual attempts to tune the weights on this score I was not able to find a combination of parameters that gave a better score. Because of this the weights for this heuristic were left at 0.
 
+The next task was to attempt to tune the hyper-parameters. For this task I used a brute force method. The robot was run a few thousand times through each maze. Each time with a set of random hyper-parameters with the following ranges (inclusive on both ends):
+| Parameter               | Low  | High | Interval |
+| ----------------------- | ---- | ---- | -------- |
+| `explore_percent`       | 0    | 1    | 0.1      |
+| `weight1_goal_dist`     | 0    | 4    | 1        |
+| `weight1_self_dist`     | 0    | 4    | 1        |
+| `weight1_area_explored` | 0    | 4    | 1        |
+| `weight2_goal_dist`     | 0    | 4    | 1        |
+| `weight2_self_dist`     | 0    | 4    | 1        |
+| `weight2_area_explored` | 0    | 4    | 1        |
+
+The result of each run was written as an entry in a csv along with the maze dimentions and the parameters used. With this information I was able to find a combination of parameters that were effective for all of the mazes in question.
+---
+
 # Results
 ## Model Evaluation and Validation
 *If a model is used, the following should hold: The final model’s qualities — such as parameters — are evaluated in detail. Some type of analysis is used to validate the robustness of the model’s solution.
 Alternatively a student may choose to answer questions with data visualizations or other means that don't involve machine learning if a different approach best helps them address their question(s) of interest.*
+
+| `explore_percent` | `w_goal_dist` | `w_self_dist` | 
 
 | Size  | Optimal Path | Goal Score | My Score | Explore % |
 | ----- | ------------ | ---------- | -------- | --------- |
@@ -187,43 +201,28 @@ Alternatively a student may choose to answer questions with data visualizations 
 *The final results are discussed in detail.
 Exploration as to why some techniques worked better than others, or how improvements were made are documented.*
 
+
+---
+
 # Conclusion
 ## Reflection
 *Student adequately summarizes the end-to-end problem solution and discusses one or two particular aspects of the project they found interesting or difficult.*
 
+This project consisted of desinging a simple robot AI to navigate a maze. This robot had to perform 5 main functions to succed at this task:
+1. Maintain an accurate record of it's current location
+2. Create a map of the environment from the given sensor data
+3. Navigate towards the goal
+4. Exploration enough to find the optimal path
+
+It was scored based on a combination of the time it spent exploring and the time for the best path. To inplement this AI, I Gathered sensor data into a graph structure containing nodes for each square in the maze and edges between them. Then I used a heuristic based search to determine the next square to navigate towards. Finally, I tuned the weights in this heuristic search until an acceptable score was achieved.
+
+This project was especially difficult because the search was performed online and without full information of the maze. This differs from typical search in that after each move the knowledge that the robot possesses must be re-evaluated, which adds a significant wrinkle to the typical search methods. On the other hand, this is also a much more practical situation for path planning, which made the project much more interesting as well.
+
 ## Improvement
 *Discussion is made as to how at least one aspect of the implementation could be improved. Potential solutions resulting from these improvements are considered and compared/contrasted to the current solution.*
 
-Free form visualization section could go here
+The unfortunate truth of this path planning algorithm is that a lot of information is not fully used. For instance, cells that have been passed over in a move of more than one square should probably be weighted less on the frontier. Additionally, sections of the maze could probably be ruled as not needed to be explored with sufficient knowedge of their surroundings. These types of things would be taken into account by algorithms that confirm optimality of the path. The challenge is performing these algorithms online. 
 
+Another area of improvement would be to make the AI more robust against larger mazes. This algorithm is not optimized for speed, but for simplicity (and reliability). For this reason, and since the search space grows with n^2 (where n is the size of the maze), this algorithm would not scale well.
 
-# Alt
-## Project Questions
-### Data Explorations
-Use the robot specifications section to discuss how the robot will interpret and explore its environment. Additionally, one of the three mazes provided should be discussed in some detail, such as some interesting structural observations and one possible solution you have found to the goal (in number of steps). Try to aim for an optimal path, if possible!
-
-Using sensor data the robot creates a graph of nodes where a node is connected to another node by an edge if the path between those two nodes is valid. During the first run pathing is determined by chosing the unexplored node with the best explore score. This score is defined by a combination of the distance to the goal and the distance from the current location of the bot. Once a node is chosen to explore, a path is created from the current location to this new goal using a simplified A* algorithm. Once the goal is found, this score is modified to only use the distance from the current node to allow additional exploration before the second run. For the second run the robot uses this same simplified A* to navigate straight to the goal.
-
-
-### Exploratory Visualization
-This section should correlate with the section above, in that you should provide a visualization of one of the three example mazes using the showmaze.py file. Your explanation in Data Exploration should coincide with the visual cues from this maze.
-
-
-### Benchmark
-You will need to decide what you feel is a reasonable benchmark score that you can compare your robot’s results on. Consider the visualization and data exploration above: If you are allowed one thousand time steps for exploring (run 1) and testing (run 2), and given the metric defined in the project, what is a reasonable score you might expect? There is no right or wrong answer here, but this will help with your discussion of solutions later on in the project.
-
-For test_maze_01 (the 12x12 maze) the shortest possible path is 17 moves. Therfore, the best possible score would be 17 / 30 (for the first run) + 17 (for the second run), for a best score of **17.6**. If approximately 50% of the cells need to be explored to find the best path this would correlate to 12 x 12 / 2 = 72 cells to explore, which would take 72 moves minimally. The score for this would be 72 / 30 + 17 = **19.4**. This robot algorithm was able to score **22.0**.
-
-
-### Data Preprocessing
-Because there is no data preprocessing needed in this project (the sensor specification and environment designs are provided to you), be sure to mention that no data preprocessing was necessary and why this is true.
-
-
-### Free-Form Visualization
-Use this section to come up with your own maze. Your maze should have the same dimensions (12x12, 14x14, or 16x16) and have the goal and starting positions in the same locations as the three example mazes (you can use test_maze_01.txt as a template). Try to make a design that you feel may either reflect the robustness of your robot’s algorithm, or amplify a potential issue with the approach you used in your robot implementation. Provide a small discussion of the maze as well.
-
-
-### Improvement
-Consider if the scenario took place in a continuous domain. For example, each square has a unit length, walls are 0.1 units thick, and the robot is a circle of diameter 0.4 units. What modifications might be necessary to your robot’s code to handle the added complexity? Are there types of mazes in the continuous domain that could not be solved in the discrete domain? If you have ideas for other extensions to the current project, describe and discuss them here.
-
-In a continuous domain
+Finaly, in future iterations of the project, I would like to continue to tune the hyper-parameters in a more organized manner (rather than brute force). To do this more mazes would be needed as well as a better way than randomized values for chosing parameters programatically. This would allow for a more robust search of the solution space and hopefully yeild better results.
