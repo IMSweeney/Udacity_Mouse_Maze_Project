@@ -89,14 +89,15 @@ class Robot(object):
         self.goal_node = self.get_node((int(self.maze_dim / 2),
                                         int(self.maze_dim / 2)))
 
-        # Define whether to randomize the weights for search simple
-        self.random_weights = True
-        self.writing_data = True
-        self.wait_for_user = False
-        self.init_search_simple()
-        print(self.maze_dim)
+        # User options
+        self.random_weights = False  # Randomize the heuristic weights
+        self.writing_data = True  # Write data (score/params) to csv
+        self.wait_for_user = True  # Wait for user input before 2nd run
+        self.do_draw = True  # Enable drawing of the maze and path
 
-        self.do_draw = False
+        self.init_search_simple()
+
+        # Initialize the drawing functions
         if self.do_draw:
             self.grid_width = 40
             self.origin = (self.grid_width,
@@ -178,8 +179,8 @@ class Robot(object):
         self.weight1_self_dist = 3
         self.weight1_area_explored = 0
         # Weights for the explore pahse of the first round
-        self.weight2_goal_dist = 0
-        self.weight2_self_dist = 1
+        self.weight2_goal_dist = 2
+        self.weight2_self_dist = 3
         self.weight2_area_explored = 0
 
         if (self.random_weights):

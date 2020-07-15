@@ -1,5 +1,5 @@
 ![Frontier16x16](/16x16_best_path.PNG)
----
+
 
 # Project Definition
 ## Project Overview
@@ -38,7 +38,7 @@ For this project the metric is stated by the competition as a score based on two
 $score = time steps in first run / 30 + time steps in second run$
 
 The goal will be to minimize this score.
----
+
 
 # Analysis
 ## Data Explorations / Visualizations
@@ -66,7 +66,7 @@ Take the 12x12 maze for example. For this maze the shortest possible path is 17 
 | 12x12 | 17           | 19.4       |
 | 14x14 | 23           | 26.3       |
 | 16x16 | 25           | 29.3       |
----
+
 
 # Methodology
 ## Data Preprocessing
@@ -181,8 +181,11 @@ The next task was to attempt to tune the hyper-parameters. For this task I used 
 | `weight2_self_dist`     | 0    | 4    | 1        |
 | `weight2_area_explored` | 0    | 4    | 1        |
 
-The result of each run was written as an entry in a csv along with the maze dimentions and the parameters used. With this information I was able to find a combination of parameters that were effective for all of the mazes in question.
----
+The result of each run was written as an entry in a csv along with the maze dimentions and the parameters used. By grouping these entries by the parameters used and sorting by the sum of scores across the three mazes I was able to find a combination of parameters that were effective for all of the mazes in question.
+| `explore_percent` | `w1_goal` | `w1_self` | `w2_goal` | `w2_self` | `sum score` |
+| ----------------- | --------- | --------- | --------- | --------- | ----------- |
+| 0.5               | 1         | 3         | 2         | 3         | 82.46       |
+
 
 # Results
 ## Model Evaluation and Validation
@@ -201,8 +204,8 @@ Alternatively a student may choose to answer questions with data visualizations 
 *The final results are discussed in detail.
 Exploration as to why some techniques worked better than others, or how improvements were made are documented.*
 
+adfsa
 
----
 
 # Conclusion
 ## Reflection
